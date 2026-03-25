@@ -91,14 +91,7 @@
 </div>
 
 <script>
-// Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
-
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+// Данные конфигурации (твои актуальные ключи)
 const firebaseConfig = {
   apiKey: "AIzaSyDaZmAmodUvLKcPSJ85SImjtBKdAIUUd_s",
   authDomain: "match-simulation.firebaseapp.com",
@@ -110,9 +103,9 @@ const firebaseConfig = {
   measurementId: "G-8M6GRFSGBP"
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+// Инициализация Firebase (Исправлено для работы в браузере)
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
 
 // Константы мап-пула
 const MAP_DATA = { 
@@ -130,7 +123,7 @@ let teams = [];
 let matches = [];
 let activeMatch = null;
 
-// Синхронизация с облаком (слушаем изменения LIVE)
+// Синхронизация с облаком
 db.ref("teams").on("value", s => { teams = s.val() || []; updateSelectors(); });
 db.ref("matches").on("value", s => { matches = s.val() || []; renderHistory(); });
 
@@ -199,14 +192,11 @@ function startVeto() {
     }
 
     activeMatch = { t1, t2, maps, bo, results: [], currentMapIdx: 0, wins1: 0, wins2: 0, veto: log, id: Date.now() };
-    
-    // Мгновенная публикация Veto в облако
     matches.unshift({
         id: activeMatch.id, t1: t1.name, p1: t1.power, t2: t2.name, p2: t2.power,
         total: "0:0", bo: bo, details: [], veto: log
     });
     db.ref("matches").set(matches);
-    
     document.getElementById("currentSeriesDisplay").style.display = "block";
     renderActiveMatch();
 }
@@ -215,7 +205,6 @@ function renderActiveMatch() {
     const am = activeMatch;
     document.getElementById("seriesTitle").innerText = `${am.t1.name} vs ${am.t2.name} [Bo${am.bo}] — ${am.wins1}:${am.wins2}`;
     document.getElementById("vetoLogLive").innerHTML = "<b>Протокол Veto:</b><br>" + am.veto.join("<br>");
-    
     let html = "";
     if(am.wins1 < Math.ceil(am.bo/2) && am.wins2 < Math.ceil(am.bo/2) && am.currentMapIdx < am.maps.length) {
         html = `<p>Текущая карта: <b style="color:var(--accent)">${am.maps[am.currentMapIdx].name}</b></p>
@@ -231,20 +220,9 @@ function playNextMap() {
     let am = activeMatch;
     let mObj = am.maps[am.currentMapIdx];
     let res = simulateMap(am.t1, am.t2, mObj);
-    
-    am.results.push({
-        name: mObj.name,
-        score: `${res.r1}:${res.r2}`,
-        rounds: res.history,
-        t_start: mObj.t_start,
-        bonus: MAP_DATA[mObj.name].bonus,
-        desc: MAP_DATA[mObj.name].desc
-    });
-
+    am.results.push({ name: mObj.name, score: `${res.r1}:${res.r2}`, rounds: res.history, t_start: mObj.t_start, bonus: MAP_DATA[mObj.name].bonus, desc: MAP_DATA[mObj.name].desc });
     if(res.r1 > res.r2) am.wins1++; else am.wins2++;
     am.currentMapIdx++;
-
-    // Обновляем облачную запись
     let mIdx = matches.findIndex(m => m.id === am.id);
     if(mIdx !== -1) {
         matches[mIdx].total = `${am.wins1}:${am.wins2}`;
@@ -258,25 +236,16 @@ function simulateMap(t1, t2, mapObj) {
     let r1 = 0, r2 = 0, l1 = 0, l2 = 0, history = ["0:0"];
     let mapBonus = MAP_DATA[mapObj.name].bonus;
     let t1StartsT = (mapObj.t_start === t1.name);
-
     while(true) {
         let r = r1 + r2;
-        let t1IsT = (r < 12) ? t1StartsT : !t1StartsT; // Смена сторон после 12 раундов
-        if(r >= 24) t1IsT = (Math.floor((r-24)/3)%2===0) ? t1StartsT : !t1StartsT; // Допы
-
+        let t1IsT = (r < 12) ? t1StartsT : !t1StartsT;
+        if(r >= 24) t1IsT = (Math.floor((r-24)/3)%2===0) ? t1StartsT : !t1StartsT;
         let chance1 = (t1.power / (t1.power + t2.power)) * 100;
-        
-        // Учет стороны карты
         if(t1IsT) chance1 -= mapBonus; else chance1 += mapBonus;
-        
-        // Экономика (Active)
         chance1 -= (l1 * 3); chance1 += (l2 * 3);
-
         if(Math.random()*100 < chance1) { r1++; l1 = 0; l2 = Math.min(l2+1, 4); }
         else { r2++; l2 = 0; l1 = Math.min(l1+1, 4); }
-        
         history.push(`${r1}:${r2}`);
-
         if((r1 === 13 && r2 < 12) || (r2 === 13 && r1 < 12)) return {r1, r2, history};
         if(r1 >= 12 && r2 >= 12) {
             let lim = 16; while(r1 > lim-1 && r2 > lim-1) lim += 3;
@@ -294,14 +263,10 @@ function renderHistory() {
             </div>
             ${m.details.map(d => `
                 <div class="map-row">
-                    <div class="map-header">
-                        <span>📍 ${d.name}</span>
-                        <span>${d.score}</span>
-                    </div>
+                    <div class="map-header"><span>📍 ${d.name}</span><span>${d.score}</span></div>
                     <div style="margin-bottom:10px;">
                         <span class="badge ${d.bonus > 0 ? 'badge-ct' : 'badge-t'}">${d.desc} (${Math.abs(d.bonus)}%)</span>
                         <span class="badge ${d.t_start === m.t1 ? 'badge-t' : 'badge-ct'}">Старт за T: ${d.t_start}</span>
-                        <span style="font-size:10px; color:#666;">Economy: Active</span>
                     </div>
                     <div class="round-history">Ход раундов: ${d.rounds.join(" → ")}</div>
                 </div>
@@ -309,19 +274,16 @@ function renderHistory() {
             <div style="font-size:11px; color:#444; cursor:pointer; margin-top:10px;" onclick="this.nextElementSibling.style.display='block';this.style.display='none'">Показать Veto...</div>
             <div class="veto-box" style="display:none">${m.veto.join("<br>")}</div>
         </div>`;
-    
     const html = matches.map(draw).join("");
-    if(document.getElementById("matchHistoryAdmin")) document.getElementById("matchHistoryAdmin").innerHTML = html || "<p style='color:#444;text-align:center;'>История матчей в облаке пуста</p>";
-    if(document.getElementById("matchHistoryViewer")) document.getElementById("matchHistoryViewer").innerHTML = html || "<p style='color:#444;text-align:center;'>Ждем начала матчей...</p>";
+    if(document.getElementById("matchHistoryAdmin")) document.getElementById("matchHistoryAdmin").innerHTML = html || "<p style='color:#444;text-align:center;'>История пуста</p>";
+    if(document.getElementById("matchHistoryViewer")) document.getElementById("matchHistoryViewer").innerHTML = html || "<p style='color:#444;text-align:center;'>Ждем матчей...</p>";
 }
 
-function clearCloud() {
-    if(confirm("Вы действительно хотите удалить ВСЕ данные из базы Firebase?")) {
-        db.ref("matches").set([]);
-    }
-}
+function clearCloud() { if(confirm("Удалить ВСЕ данные?")) db.ref("matches").set([]); }
 
+// Запуск проверки авторизации
 checkAuth();
+                                 
 </script>
 </body>
 </html>
