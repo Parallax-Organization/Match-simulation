@@ -2,127 +2,189 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<title>Esports Manager Match Simulation v4.2</title>
+<title>ESPORTS MANAGER match simulation v4.5</title>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
 <style>
     :root { --bg: #0f111a; --card: #161925; --text: #e0e0e0; --accent: #00ff41; --danger: #ff4b2b; --info: #00b4ff; --t-color: #e9ae39; --ct-color: #4a90e2; }
-    body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; }
-    .container { max-width: 850px; margin: 0 auto; background: var(--card); padding: 25px; border-radius: 12px; border: 1px solid #2d334a; }
-    h2, h3 { color: var(--accent); text-transform: uppercase; }
-    input, select { background: #1f2335; border: 1px solid #414868; color: white; padding: 10px; border-radius: 6px; margin: 5px; }
-    button { background: var(--accent); color: #000; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; }
-    .btn-exit { background: #414868; color: white; }
-    .match-card { background: #1f2335; padding: 20px; border-radius: 10px; margin-bottom: 20px; border-left: 4px solid var(--accent); position: relative; }
-    .match-header { display: flex; justify-content: space-between; border-bottom: 1px solid #2d334a; padding-bottom: 10px; margin-bottom: 10px; }
-    .map-row { background: rgba(0,0,0,0.3); padding: 10px; margin: 10px 0; border-radius: 6px; }
-    .round-history { font-size: 11px; color: #888; margin-top: 8px; font-family: monospace; line-height: 1.4; }
-    .badge { padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; margin-right: 5px; }
+    body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; line-height: 1.5; }
+    .container { max-width: 900px; margin: 0 auto; background: var(--card); padding: 30px; border-radius: 15px; border: 1px solid #2d334a; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+    
+    h1 { color: var(--accent); margin: 0; letter-spacing: 3px; text-align: center; font-size: 2.5em; }
+    .sub-title { color: var(--info); text-align: center; font-weight: bold; letter-spacing: 5px; margin-bottom: 30px; font-size: 0.9em; }
+    
+    input, select { background: #1f2335; border: 1px solid #414868; color: white; padding: 12px; border-radius: 8px; margin: 5px; font-size: 14px; }
+    button { background: var(--accent); color: #000; border: none; padding: 12px 25px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; text-transform: uppercase; }
+    button:hover { opacity: 0.8; transform: translateY(-2px); }
+    
+    .btn-exit { background: #414868; color: white; float: right; padding: 8px 15px; font-size: 12px; }
+    
+    .match-card { background: #1f2335; padding: 20px; border-radius: 12px; margin-bottom: 20px; border-left: 5px solid var(--accent); position: relative; clear: both; }
+    .current-series { border: 2px solid var(--info); background: rgba(0, 180, 255, 0.05); padding: 20px; border-radius: 12px; margin-bottom: 25px; }
+    
+    .map-row { background: rgba(0,0,0,0.4); padding: 15px; margin: 12px 0; border-radius: 8px; border: 1px solid #2d334a; }
+    .map-header { display: flex; justify-content: space-between; align-items: center; font-weight: bold; font-size: 1.1em; border-bottom: 1px solid #333; padding-bottom: 8px; margin-bottom: 10px; }
+    
+    .round-history { font-size: 11px; color: #888; font-family: 'Courier New', monospace; background: #0a0c14; padding: 10px; border-radius: 5px; margin-top: 10px; line-height: 1.6; word-spacing: 5px; }
+    
+    .badge { padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; margin-right: 8px; text-transform: uppercase; }
     .badge-ct { background: var(--ct-color); color: white; }
     .badge-t { background: var(--t-color); color: black; }
-    .veto-box { background: #0a0c14; padding: 10px; border-radius: 6px; font-family: monospace; font-size: 12px; margin: 10px 0; border: 1px dashed #414868; color: #777; line-height: 1.5; }
-    .current-series { border: 2px solid var(--info); padding: 15px; border-radius: 10px; margin-bottom: 20px; background: rgba(0, 180, 255, 0.05); }
+    
+    .veto-box { background: #0a0c14; padding: 15px; border-radius: 8px; font-family: monospace; font-size: 13px; margin: 15px 0; border: 1px dashed #414868; color: #aaa; line-height: 1.6; }
+    .power-val { color: #888; font-weight: normal; font-size: 0.8em; }
 </style>
 </head>
 <body>
 
 <div class="container">
     <div id="authSection" style="display:none;">
-        <h2>Esports Manager Match Simulation v4.2</h2>
-        <input type="password" id="pass" placeholder="Пароль (1234)">
-        <button onclick="auth(true)">Админ</button>
-        <button onclick="auth(false)">Зритель</button>
+        <h1>ESPORTS MANAGER</h1>
+        <div class="sub-title">MATCH SIMULATION v4.5</div>
+        <div style="text-align: center; margin-top: 50px;">
+            <input type="password" id="pass" placeholder="Пароль администратора">
+            <div style="margin-top: 20px;">
+                <button onclick="auth(true)">Вход для Админа</button>
+                <button onclick="auth(false)" style="background: #414868; color: white;">Режим Зрителя</button>
+            </div>
+        </div>
     </div>
 
     <div id="adminPanel" style="display:none;">
-        <div style="display:flex; justify-content: space-between; align-items: center;">
-            <h3>Управление</h3>
-            <button class="btn-exit" onclick="logout()">Выйти</button>
-        </div>
+        <button class="btn-exit" onclick="logout()">Выйти</button>
+        <h3>Панель управления трансляцией</h3>
+        
         <div class="match-card">
-            <input type="text" id="tName" placeholder="Команда">
-            <input type="number" id="tPower" placeholder="Сила">
-            <button onclick="addTeam()">Добавить</button>
-            <div id="teamsDisplay" style="margin-top:10px;"></div>
+            <input type="text" id="tName" placeholder="Название команды">
+            <input type="number" id="tPower" placeholder="Сила (Power)">
+            <button onclick="addTeam()">Добавить в базу</button>
+            <div id="teamsDisplay" style="margin-top:15px; font-size: 14px;"></div>
         </div>
+
         <div class="match-card">
-            <select id="sel1"></select> VS <select id="sel2"></select>
-            <select id="bo"><option value="1">Bo1</option><option value="3">Bo3</option><option value="5">Bo5</option></select>
-            <button onclick="startVeto()">Провести Veto</button>
+            <select id="sel1"></select> <b style="color:var(--accent)">VS</b> <select id="sel2"></select>
+            <select id="bo">
+                <option value="1">Best of 1</option>
+                <option value="3">Best of 3</option>
+                <option value="5">Best of 5</option>
+            </select>
+            <button onclick="startVeto()" style="background: var(--info); color: white;">Провести Veto</button>
         </div>
 
         <div id="currentSeriesDisplay" style="display:none;" class="current-series">
-            <h4 id="seriesTitle">Матч в процессе...</h4>
-            <div id="vetoLogLive" class="veto-box"></div> <div id="mapControls"></div>
+            <h2 id="seriesTitle" style="text-align:left; color: white;">Матч LIVE</h2>
+            <div id="vetoLogLive" class="veto-box"></div>
+            <div id="mapControls" style="text-align: center; padding: 20px;"></div>
         </div>
 
         <div id="matchHistoryAdmin"></div>
-        <button style="background:var(--danger); color:white; width:100%; margin-top:20px;" onclick="clearHistory()">Очистить историю</button>
+        <button style="background:var(--danger); color:white; width:100%; margin-top:30px;" onclick="clearCloud()">ПОЛНАЯ ОЧИСТКА ИСТОРИИ (CLOUD)</button>
     </div>
 
     <div id="viewerPanel" style="display:none;">
-        <div style="display:flex; justify-content: space-between; align-items: center;">
-            <h3>Результаты LIVE</h3>
-            <button class="btn-exit" onclick="logout()">Выйти</button>
-        </div>
+        <button class="btn-exit" onclick="logout()">Выйти</button>
+        <h1>ESPORTS MANAGER</h1>
+        <div class="sub-title">LIVE RESULTS</div>
         <div id="matchHistoryViewer"></div>
     </div>
 </div>
 
 <script>
-const MAP_DATA = {
-    "Mirage": { bonus: 1.5, desc: "CT-Side" }, "Inferno": { bonus: 2.8, desc: "Strong CT" },
-    "Nuke": { bonus: 3.5, desc: "Elite CT" }, "Ancient": { bonus: 2.2, desc: "CT-Side" },
-    "Anubis": { bonus: -2.0, desc: "T-Side" }, "Dust2": { bonus: -0.7, desc: "Slight T" },
-    "Vertigo": { bonus: 1.2, desc: "Slight CT" }
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyDaZmAmodUvLKcPSJ85SImjtBKdAIUUd_s",
+  authDomain: "match-simulation.firebaseapp.com",
+  databaseURL: "https://match-simulation-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "match-simulation",
+  storageBucket: "match-simulation.firebasestorage.app",
+  messagingSenderId: "991337782669",
+  appId: "1:991337782669:web:addc6ead3cdc08baab71c4",
+  measurementId: "G-8M6GRFSGBP"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
+
+// Константы мап-пула
+const MAP_DATA = { 
+    "Mirage": { bonus: 1.5, desc: "CT-Side" }, 
+    "Inferno": { bonus: 2.8, desc: "Strong CT" }, 
+    "Nuke": { bonus: 3.5, desc: "Elite CT" }, 
+    "Ancient": { bonus: 2.2, desc: "CT-Side" }, 
+    "Anubis": { bonus: -2.0, desc: "T-Side" }, 
+    "Dust2": { bonus: -0.7, desc: "Slight T" }, 
+    "Vertigo": { bonus: 1.2, desc: "Slight CT" } 
 };
 const MAP_POOL = Object.keys(MAP_DATA);
 
-let teams = JSON.parse(localStorage.getItem("teams")) || [];
-let matches = JSON.parse(localStorage.getItem("matches")) || [];
+let teams = [];
+let matches = [];
 let activeMatch = null;
 
+// Синхронизация с облаком (слушаем изменения LIVE)
+db.ref("teams").on("value", s => { teams = s.val() || []; updateSelectors(); });
+db.ref("matches").on("value", s => { matches = s.val() || []; renderHistory(); });
+
 function auth(isAdmin) {
-    if(isAdmin && document.getElementById("pass").value !== "Penis123") return alert("!");
-    sessionStorage.setItem("cs_role", isAdmin ? "admin" : "viewer");
+    if(isAdmin && document.getElementById("pass").value !== "1234") return alert("Доступ запрещен!");
+    sessionStorage.setItem("es_role", isAdmin ? "admin" : "viewer");
     checkAuth();
 }
-function logout() { sessionStorage.removeItem("cs_role"); location.reload(); }
+
+function logout() { sessionStorage.removeItem("es_role"); location.reload(); }
 
 function checkAuth() {
-    const role = sessionStorage.getItem("cs_role");
-    document.getElementById("authSection").style.display = !role ? "block" : "none";
-    document.getElementById("adminPanel").style.display = role === "admin" ? "block" : "none";
-    document.getElementById("viewerPanel").style.display = role === "viewer" ? "block" : "none";
-    updateUI();
+    const r = sessionStorage.getItem("es_role");
+    document.getElementById("authSection").style.display = !r ? "block" : "none";
+    document.getElementById("adminPanel").style.display = r === "admin" ? "block" : "none";
+    document.getElementById("viewerPanel").style.display = r === "viewer" ? "block" : "none";
 }
 
 function addTeam() {
     let n = document.getElementById("tName"), p = document.getElementById("tPower");
-    if(n.value && p.value > 0) {
+    if(n.value && p.value) {
         teams.push({ name: n.value, power: parseInt(p.value) });
-        localStorage.setItem("teams", JSON.stringify(teams));
-        n.value = ""; p.value = ""; updateUI();
+        db.ref("teams").set(teams);
+        n.value = ""; p.value = "";
     }
 }
 
-function updateUI() {
+function updateSelectors() {
     const d = document.getElementById("teamsDisplay");
-    if(d) d.innerHTML = teams.map((t,i)=>`<div>• ${t.name} (${t.power}) <span onclick="teams.splice(${i},1);localStorage.setItem('teams',JSON.stringify(teams));updateUI();" style="color:red;cursor:pointer">×</span></div>`).join("");
-    [document.getElementById("sel1"), document.getElementById("sel2")].forEach(s => {
-        if(!s) return; s.innerHTML = "";
-        teams.forEach((t, i) => s.add(new Option(t.name, i)));
-    });
-    renderHistory();
-    if(activeMatch) renderActiveMatch();
+    if(d) d.innerHTML = teams.map((t,i)=>`<div>• ${t.name} <span class="power-val">(${t.power})</span> <span onclick="deleteTeam(${i})" style="color:red;cursor:pointer;margin-left:10px;">×</span></div>`).join("");
+    const s1 = document.getElementById("sel1"), s2 = document.getElementById("sel2");
+    if(s1 && s2) {
+        s1.innerHTML = ""; s2.innerHTML = "";
+        teams.forEach((t, i) => {
+            s1.add(new Option(t.name, i));
+            s2.add(new Option(t.name, i));
+        });
+    }
 }
+
+function deleteTeam(i) { teams.splice(i,1); db.ref("teams").set(teams); }
 
 function startVeto() {
     let i1 = document.getElementById("sel1").value, i2 = document.getElementById("sel2").value, bo = parseInt(document.getElementById("bo").value);
-    if(i1==="" || i1===i2) return;
+    if(i1==="" || i1===i2) return alert("Выберите разные команды!");
+    
     let t1 = teams[i1], t2 = teams[i2], pool = [...MAP_POOL], log = [], maps = [];
 
     if(bo == 1) {
-        for(let i=0; i<6; i++) log.push(`${(i%2==0?t1.name:t2.name)} забанил ${pool.splice(Math.floor(Math.random()*pool.length), 1)[0]}`);
-        maps.push({ name: pool[0], t_start: (Math.random() > 0.5 ? t1.name : t2.name) });
+        for(let i=0; i<6; i++) {
+            let b = pool.splice(Math.floor(Math.random()*pool.length), 1)[0];
+            log.push(`${(i%2==0?t1.name:t2.name)} забанил ${b}`);
+        }
+        maps.push({ name: pool[0], t_start: (Math.random()>0.5?t1.name:t2.name) });
     } else {
         log.push(`${t1.name} забанил ${pool.splice(Math.floor(Math.random()*pool.length), 1)[0]}`);
         log.push(`${t2.name} забанил ${pool.splice(Math.floor(Math.random()*pool.length), 1)[0]}`);
@@ -131,36 +193,36 @@ function startVeto() {
             maps.push({ name: p, t_start: (i%2==0?t1.name:t2.name) });
             log.push(`${(i%2==0?t1.name:t2.name)} пикнул ${p}`);
         }
-        let dec = pool.splice(Math.floor(Math.random()*pool.length), 1)[0];
-        maps.push({ name: dec, t_start: (Math.random() > 0.5 ? t1.name : t2.name) });
-        log.push(`Десайдер: ${dec}`);
+        let decider = pool.splice(Math.floor(Math.random()*pool.length), 1)[0];
+        maps.push({ name: decider, t_start: (Math.random()>0.5?t1.name:t2.name) });
+        log.push(`Десайдер: ${decider}`);
     }
 
     activeMatch = { t1, t2, maps, bo, results: [], currentMapIdx: 0, wins1: 0, wins2: 0, veto: log, id: Date.now() };
     
-    // Сразу сохраняем в историю со статусом LIVE
+    // Мгновенная публикация Veto в облако
     matches.unshift({
         id: activeMatch.id, t1: t1.name, p1: t1.power, t2: t2.name, p2: t2.power,
         total: "0:0", bo: bo, details: [], veto: log
     });
-    localStorage.setItem("matches", JSON.stringify(matches));
+    db.ref("matches").set(matches);
     
     document.getElementById("currentSeriesDisplay").style.display = "block";
-    updateUI();
+    renderActiveMatch();
 }
 
 function renderActiveMatch() {
     const am = activeMatch;
-    document.getElementById("seriesTitle").innerText = `${am.t1.name} vs ${am.t2.name} [Bo${am.bo}] - ${am.wins1}:${am.wins2}`;
-    document.getElementById("vetoLogLive").innerHTML = "<b>Результаты Veto:</b><br>" + am.veto.join("<br>");
+    document.getElementById("seriesTitle").innerText = `${am.t1.name} vs ${am.t2.name} [Bo${am.bo}] — ${am.wins1}:${am.wins2}`;
+    document.getElementById("vetoLogLive").innerHTML = "<b>Протокол Veto:</b><br>" + am.veto.join("<br>");
     
     let html = "";
     if(am.wins1 < Math.ceil(am.bo/2) && am.wins2 < Math.ceil(am.bo/2) && am.currentMapIdx < am.maps.length) {
-        html = `<p style="margin-top:15px;">Текущая стадия: Карта <b>${am.maps[am.currentMapIdx].name}</b></p>
-                <button onclick="playNextMap()" style="background:var(--info); color:white;">ЗАПУСТИТЬ СИМУЛЯЦИЮ КАРТЫ</button>`;
+        html = `<p>Текущая карта: <b style="color:var(--accent)">${am.maps[am.currentMapIdx].name}</b></p>
+                <button onclick="playNextMap()" style="background:var(--info); color:white;">ЗАПУСТИТЬ КАРТУ</button>`;
     } else {
-        html = `<p style="color:var(--accent); margin-top:15px;">СЕРИЯ ЗАВЕРШЕНА!</p>
-                <button onclick="activeMatch=null;updateUI();document.getElementById('currentSeriesDisplay').style.display='none';">ЗАКРЫТЬ ПУЛЬТ</button>`;
+        html = `<p style="color:var(--accent); font-weight:bold;">Матч полностью завершен</p>
+                <button onclick="activeMatch=null;document.getElementById('currentSeriesDisplay').style.display='none';">ЗАКРЫТЬ ПУЛЬТ</button>`;
     }
     document.getElementById("mapControls").innerHTML = html;
 }
@@ -171,36 +233,50 @@ function playNextMap() {
     let res = simulateMap(am.t1, am.t2, mObj);
     
     am.results.push({
-        name: mObj.name, score: `${res.r1}:${res.r2}`, rounds: res.history,
-        t_start: mObj.t_start, bonus: MAP_DATA[mObj.name].bonus, desc: MAP_DATA[mObj.name].desc
+        name: mObj.name,
+        score: `${res.r1}:${res.r2}`,
+        rounds: res.history,
+        t_start: mObj.t_start,
+        bonus: MAP_DATA[mObj.name].bonus,
+        desc: MAP_DATA[mObj.name].desc
     });
 
     if(res.r1 > res.r2) am.wins1++; else am.wins2++;
     am.currentMapIdx++;
 
+    // Обновляем облачную запись
     let mIdx = matches.findIndex(m => m.id === am.id);
     if(mIdx !== -1) {
         matches[mIdx].total = `${am.wins1}:${am.wins2}`;
         matches[mIdx].details = am.results;
-        localStorage.setItem("matches", JSON.stringify(matches));
+        db.ref("matches").set(matches);
     }
-    updateUI();
+    renderActiveMatch();
 }
 
 function simulateMap(t1, t2, mapObj) {
     let r1 = 0, r2 = 0, l1 = 0, l2 = 0, history = ["0:0"];
-    let bonus = MAP_DATA[mapObj.name].bonus;
+    let mapBonus = MAP_DATA[mapObj.name].bonus;
     let t1StartsT = (mapObj.t_start === t1.name);
+
     while(true) {
         let r = r1 + r2;
-        let t1IsT = (r < 12) ? t1StartsT : !t1StartsT;
-        if(r >= 24) t1IsT = (Math.floor((r-24)/3)%2===0) ? t1StartsT : !t1StartsT;
-        let c1 = (t1.power / (t1.power + t2.power)) * 100;
-        if(t1IsT) c1 -= bonus; else c1 += bonus;
-        c1 -= (l1 * 3); c1 += (l2 * 3);
-        if(Math.random()*100 < c1) { r1++; l1 = 0; l2 = Math.min(l2+1, 4); }
+        let t1IsT = (r < 12) ? t1StartsT : !t1StartsT; // Смена сторон после 12 раундов
+        if(r >= 24) t1IsT = (Math.floor((r-24)/3)%2===0) ? t1StartsT : !t1StartsT; // Допы
+
+        let chance1 = (t1.power / (t1.power + t2.power)) * 100;
+        
+        // Учет стороны карты
+        if(t1IsT) chance1 -= mapBonus; else chance1 += mapBonus;
+        
+        // Экономика (Active)
+        chance1 -= (l1 * 3); chance1 += (l2 * 3);
+
+        if(Math.random()*100 < chance1) { r1++; l1 = 0; l2 = Math.min(l2+1, 4); }
         else { r2++; l2 = 0; l1 = Math.min(l1+1, 4); }
+        
         history.push(`${r1}:${r2}`);
+
         if((r1 === 13 && r2 < 12) || (r2 === 13 && r1 < 12)) return {r1, r2, history};
         if(r1 >= 12 && r2 >= 12) {
             let lim = 16; while(r1 > lim-1 && r2 > lim-1) lim += 3;
@@ -212,33 +288,40 @@ function simulateMap(t1, t2, mapObj) {
 function renderHistory() {
     const draw = (m) => `
         <div class="match-card">
-            <div class="match-header">
-                <span><b>${m.t1}</b> (${m.p1}) vs <b>${m.t2}</b> (${m.p2}) <small style="color:var(--info)">[Bo${m.bo}]</small></span>
-                <span style="color:var(--accent)">${m.total}</span>
+            <div style="display:flex; justify-content:space-between; border-bottom:1px solid #333; padding-bottom:10px; margin-bottom:10px;">
+                <span><b>${m.t1}</b> <span class="power-val">(${m.p1})</span> vs <b>${m.t2}</b> <span class="power-val">(${m.p2})</span> <small style="color:var(--info); margin-left:10px;">Bo${m.bo}</small></span>
+                <span style="color:var(--accent); font-size: 1.2em;">${m.total}</span>
             </div>
             ${m.details.map(d => `
                 <div class="map-row">
-                    <div style="display:flex; justify-content:space-between; font-weight:bold;">
+                    <div class="map-header">
                         <span>📍 ${d.name}</span>
                         <span>${d.score}</span>
                     </div>
-                    <div style="font-size:10px; margin-top:5px; color:#949fb5;">
+                    <div style="margin-bottom:10px;">
                         <span class="badge ${d.bonus > 0 ? 'badge-ct' : 'badge-t'}">${d.desc} (${Math.abs(d.bonus)}%)</span>
-                        <span class="badge ${d.t_start === m.t1 ? 'badge-t' : 'badge-ct'}">Старт T: ${d.t_start}</span>
+                        <span class="badge ${d.t_start === m.t1 ? 'badge-t' : 'badge-ct'}">Старт за T: ${d.t_start}</span>
+                        <span style="font-size:10px; color:#666;">Economy: Active</span>
                     </div>
-                    <div class="round-history">Ход матча: ${d.rounds.join(" → ")}</div>
+                    <div class="round-history">Ход раундов: ${d.rounds.join(" → ")}</div>
                 </div>
             `).join("")}
-            <div style="font-size:11px; color:#565f89; cursor:pointer; margin-top:5px;" onclick="this.nextElementSibling.style.display='block';this.style.display='none'">Показать Veto...</div>
+            <div style="font-size:11px; color:#444; cursor:pointer; margin-top:10px;" onclick="this.nextElementSibling.style.display='block';this.style.display='none'">Показать Veto...</div>
             <div class="veto-box" style="display:none">${m.veto.join("<br>")}</div>
         </div>`;
-    const h = matches.map(draw).join("");
-    if(document.getElementById("matchHistoryAdmin")) document.getElementById("matchHistoryAdmin").innerHTML = h || "История пуста";
-    if(document.getElementById("matchHistoryViewer")) document.getElementById("matchHistoryViewer").innerHTML = h || "История пуста";
+    
+    const html = matches.map(draw).join("");
+    if(document.getElementById("matchHistoryAdmin")) document.getElementById("matchHistoryAdmin").innerHTML = html || "<p style='color:#444;text-align:center;'>История матчей в облаке пуста</p>";
+    if(document.getElementById("matchHistoryViewer")) document.getElementById("matchHistoryViewer").innerHTML = html || "<p style='color:#444;text-align:center;'>Ждем начала матчей...</p>";
 }
-function clearHistory() { if(confirm("Удалить?")) { matches=[]; localStorage.setItem("matches","[]"); updateUI(); } }
+
+function clearCloud() {
+    if(confirm("Вы действительно хотите удалить ВСЕ данные из базы Firebase?")) {
+        db.ref("matches").set([]);
+    }
+}
+
 checkAuth();
 </script>
 </body>
 </html>
-
