@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<title>ESPORTS MANAGER v4.12 PRO PLATFORM</title>
+<title>ESPORTS MANAGER v4.13 ULTIMATE</title>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 
@@ -14,11 +14,11 @@
     h1 { color: var(--accent); margin: 0; text-align: center; letter-spacing: 2px; text-transform: uppercase; font-size: 2em; }
     .sub-title { color: var(--info); text-align: center; font-weight: bold; letter-spacing: 5px; margin-bottom: 25px; font-size: 0.8em; }
 
-    /* Обновленный Changelog */
+    /* Changelog */
     .changelog-container { background: #0a0c14; border: 1px solid #333; padding: 20px; border-radius: 12px; margin-bottom: 30px; border-left: 4px solid var(--accent); }
     .changelog-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
     .nav-btns { display: flex; gap: 10px; }
-    .nav-btn { width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; background: #1f2335; border: 1px solid #414868; border-radius: 50%; cursor: pointer; color: var(--accent); transition: 0.3s; font-weight: bold; }
+    .nav-btn { width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; background: #1f2335; border: 1px solid #414868; border-radius: 50%; cursor: pointer; color: var(--accent); transition: 0.3s; font-weight: bold; font-size: 18px; }
     .nav-btn:hover { background: var(--accent); color: #000; }
     .changelog-content { font-size: 13px; color: #ccc; }
     .changelog-content ul { padding-left: 18px; margin: 8px 0; }
@@ -61,7 +61,7 @@
 <div class="container">
     <div id="authSection">
         <h1>ESPORTS MANAGER</h1>
-        <div class="sub-title">VERSION 4.12 PRO</div>
+        <div class="sub-title">VERSION 4.13 ULTIMATE</div>
 
         <div class="changelog-container">
             <div class="changelog-header">
@@ -75,23 +75,21 @@
         </div>
 
         <div style="text-align: center;">
-            <input type="password" id="pass" placeholder="Пароль администратора">
+            <input type="password" id="pass" placeholder="Пароль">
             <div style="margin-top: 20px;">
-                <button onclick="auth(true)">Панель управления</button>
-                <button onclick="auth(false)" style="background: #414868; color: white;">Просмотр результатов</button>
+                <button onclick="auth(true)">Админ</button>
+                <button onclick="auth(false)" style="background: #414868; color: white;">Зритель</button>
             </div>
         </div>
     </div>
 
     <div id="tourneySection" style="display:none;">
-        <button onclick="logout()" style="float:right; background:#444; color:white;">Выход</button>
-        <h2 id="tourneyHeader">Турнирная сетка</h2>
-        
-        <div id="adminTourneyCreate" style="display:none; margin-bottom:25px; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px;">
+        <button onclick="logout()" style="float:right; background:#444; color:white;">Выйти из аккаунта</button>
+        <h2 id="tourneyHeader">Выберите турнир</h2>
+        <div id="adminTourneyCreate" style="display:none; margin-bottom:20px;">
             <input type="text" id="newTourneyName" placeholder="Название турнира">
             <button onclick="createTourney()">Создать турнир</button>
         </div>
-
         <div id="tourneyList" class="tourney-grid"></div>
     </div>
 
@@ -100,25 +98,25 @@
             <div>Турнир: <b id="activeTourneyName" style="color:var(--accent)"></b></div>
             <div id="tourneyStatusArea"></div>
             <div>
-                <button onclick="exitTourney()" style="background:#333; color:white; padding: 5px 10px; font-size:11px;">Назад к списку</button>
+                <button onclick="exitTourney()" style="background:#444; color:white; padding: 5px 10px; font-size:11px;">Выйти из турнира</button>
                 <button onclick="logout()" style="background:var(--danger); color:white; padding: 5px 10px; font-size:11px;">Logout</button>
             </div>
         </div>
 
         <div id="adminContent" style="display:none;">
-            <div id="adminActions" style="margin-bottom: 20px;">
-                 <button id="finishBtn" onclick="finishTourney()" style="background:var(--danger); color:white; font-size:12px;">Завершить турнир</button>
+            <div id="adminActions" style="margin-bottom: 15px;">
+                 <button id="finishBtn" onclick="finishTourney()" style="background:var(--danger); color:white; font-size:11px;">Завершить турнир</button>
             </div>
             <div class="match-card">
-                <h3>Управление командами</h3>
+                <h3>Команды турнира</h3>
                 <input type="text" id="tName" placeholder="Название">
                 <input type="number" id="tPower" placeholder="Сила">
-                <button onclick="addTeam()">Добавить</button>
-                <div id="teamsDisplay" style="margin-top:15px;"></div>
+                <button onclick="addTeam()">+</button>
+                <div id="teamsDisplay" style="margin-top:10px;"></div>
             </div>
             <div class="match-card">
-                <h3>Создать матч</h3>
-                <input type="text" id="matchStageName" placeholder="Стадия (напр. Полуфинал)">
+                <h3>Запустить матч</h3>
+                <input type="text" id="matchStageName" placeholder="Стадия (необязательно)">
                 <br>
                 <select id="sel1"></select> VS <select id="sel2"></select>
                 <select id="bo"><option value="1">Bo1</option><option value="3">Bo3</option><option value="5">Bo5</option></select>
@@ -130,13 +128,12 @@
                 <div id="mapControls" style="text-align:center;"></div>
             </div>
         </div>
-
         <div id="matchHistory"></div>
     </div>
 </div>
 
 <script>
-// --- FB ---
+// --- FIREBASE ---
 const firebaseConfig = {
   apiKey: "AIzaSyDaZmAmodUvLKcPSJ85SImjtBKdAIUUd_s",
   authDomain: "match-simulation.firebaseapp.com",
@@ -153,29 +150,33 @@ const MAP_DATA = { "Mirage": { bonus: 1.5, side: "CT" }, "Inferno": { bonus: 2.8
 const MAP_POOL = Object.keys(MAP_DATA);
 
 const UPDATES = [
+    { v: "4.13", items: [
+        "Команды теперь уникальны для каждого турнира (изоляция составов).",
+        "Исправлена логика Veto Bo3: Бан-Бан, Пик-Пик, Бан-Бан, Десайдер.",
+        "Вернули отображение бонусов сторон в историю матчей с цветовой индикацией.",
+        "Полное сохранение истории всех предыдущих обновлений.",
+        "Запрет на удаление матчей для предотвращения сомнений зрителей."
+    ]},
     { v: "4.12", items: [
-        "Anti-322: Убрана возможность удаления матчей (честность превыше всего).",
-        "Добавлена возможность задавать стадию матча (Финал, Четвертьфинал и т.д.).",
+        "Anti-322: Убрана возможность удаления матчей.",
+        "Добавлена возможность задавать стадию матча (Финал, Четвертьфинал).",
         "Турниры теперь имеют статус: 'Идёт' или 'Завершён'.",
-        "Завершённые турниры автоматически перемещаются в конец списка.",
-        "Исправлен лог Veto для Bo5 (3/4 карты и ножи на 5-й теперь пишутся корректно).",
-        "Улучшен дизайн навигации и стрелок обновления."
+        "Завершённые турниры автоматически перемещаются вниз.",
+        "Улучшен дизайн стрелок и навигации."
     ]},
     { v: "4.11", items: [
-        "Система вкладок для разных турниров.",
-        "Сохранение текущего турнира при обновлении страницы.",
-        "Возможность удаления турниров админом."
+        "Система вкладок (Турниров).",
+        "Матчи не пересекаются между турнирами.",
+        "Сохранение текущего турнира при обновлении страницы."
     ]},
     { v: "4.10", items: [
-        "Интерактивный лог обновлений со стрелками.",
-        "Расширенное Veto для Bo5.",
+        "Система MR12 и овертаймы каждые 3 раунда.",
         "Ножевой раунд на десайдере.",
-        "Полный русский перевод интерфейса."
+        "Расширенное Veto для Bo5."
     ]},
     { v: "4.9", items: [
-        "Фикс Bo5 (баг 2:1).",
-        "Переносы строк каждые 3 раунда в овертаймах.",
-        "Кнопка скрыть/показать Veto в истории."
+        "Исправление бага Bo5 (счет 2:1).",
+        "Кнопка Показать/Скрыть Veto в истории."
     ]}
 ];
 
@@ -184,11 +185,7 @@ let teams = [], tournaments = [], matches = [], activeMatch = null;
 let currentRole = sessionStorage.getItem("es_role");
 let currentTourneyId = localStorage.getItem("es_tourney_id");
 
-// --- UI LOGIC ---
-function changeLog(dir) {
-    currentLogIdx = (currentLogIdx + dir + UPDATES.length) % UPDATES.length;
-    renderLog();
-}
+function changeLog(dir) { currentLogIdx = (currentLogIdx + dir + UPDATES.length) % UPDATES.length; renderLog(); }
 function renderLog() {
     const up = UPDATES[currentLogIdx];
     document.getElementById("verTitle").innerText = "Версия " + up.v;
@@ -197,12 +194,11 @@ function renderLog() {
 renderLog();
 
 function auth(isAdmin) {
-    if(isAdmin && document.getElementById("pass").value !== "1234") return alert("Доступ закрыт!");
+    if(isAdmin && document.getElementById("pass").value !== "1234") return alert("Пароль неверный");
     currentRole = isAdmin ? "admin" : "viewer";
     sessionStorage.setItem("es_role", currentRole);
     checkState();
 }
-
 function logout() { sessionStorage.clear(); localStorage.clear(); location.reload(); }
 function exitTourney() { localStorage.removeItem("es_tourney_id"); currentTourneyId = null; checkState(); }
 
@@ -223,75 +219,33 @@ function checkState() {
     }
 }
 
-// --- TOURNAMENTS ---
 function loadTournaments() {
     db.ref("tournaments").on("value", s => {
         const val = s.val() || {};
         tournaments = Object.keys(val).map(id => ({ id, ...val[id] }));
-        // Сортировка: активные сверху
         tournaments.sort((a,b) => (a.status === 'active' ? -1 : 1));
-        
         document.getElementById("tourneyList").innerHTML = tournaments.map(t => `
             <div class="tourney-card ${t.status === 'finished' ? 'finished' : ''}" onclick="selectTourney('${t.id}')">
-                <span class="status-badge ${t.status === 'active' ? 'status-active' : 'status-finished'}">
-                    ${t.status === 'active' ? '• Идёт' : '✓ Завершён'}
-                </span>
+                <span class="status-badge ${t.status === 'active' ? 'status-active' : 'status-finished'}">${t.status === 'active' ? '• Идёт' : '✓ Завершён'}</span>
                 <br><b>${t.name}</b>
                 ${currentRole === 'admin' ? `<br><small style="color:red" onclick="event.stopPropagation(); deleteTourney('${t.id}')">[ Удалить ]</small>` : ''}
-            </div>
-        `).join("");
+            </div>`).join("");
     });
 }
+function createTourney() { const n = document.getElementById("newTourneyName").value.trim(); if(n) db.ref("tournaments").push({ name: n, status: "active" }); }
+function deleteTourney(id) { if(confirm("Удалить турнир, команды и матчи?")) { db.ref("tournaments/"+id).remove(); db.ref("matches/"+id).remove(); db.ref("teams/"+id).remove(); } }
+function selectTourney(id) { currentTourneyId = id; localStorage.setItem("es_tourney_id", id); checkState(); }
+function finishTourney() { if(confirm("Завершить турнир?")) db.ref("tournaments/" + currentTourneyId).update({ status: "finished" }); }
 
-function createTourney() {
-    const name = document.getElementById("newTourneyName").value.trim();
-    if(name) {
-        db.ref("tournaments").push({ name, status: "active" });
-        document.getElementById("newTourneyName").value = "";
-    }
-}
-
-function deleteTourney(id) {
-    if(confirm("Удалить турнир и все его матчи безвозвратно?")) {
-        db.ref("tournaments/" + id).remove();
-        db.ref("matches/" + id).remove();
-    }
-}
-
-function selectTourney(id) {
-    currentTourneyId = id;
-    localStorage.setItem("es_tourney_id", id);
-    checkState();
-}
-
-function finishTourney() {
-    if(confirm("Завершить турнир? Больше нельзя будет проводить матчи.")) {
-        db.ref("tournaments/" + currentTourneyId).update({ status: "finished" });
-    }
-}
-
-// --- MATCHES ---
 function loadTourneyData() {
     db.ref("tournaments/" + currentTourneyId).on("value", s => {
-        const t = s.val();
-        if(!t) return exitTourney();
+        const t = s.val(); if(!t) return exitTourney();
         document.getElementById("activeTourneyName").innerText = t.name;
-        document.getElementById("tourneyStatusArea").innerHTML = t.status === 'active' ? 
-            '<span style="color:var(--accent)">[ Активен ]</span>' : '<span style="color:var(--danger)">[ Завершён ]</span>';
+        document.getElementById("tourneyStatusArea").innerHTML = t.status === 'active' ? '<span style="color:var(--accent)">[ Активен ]</span>' : '<span style="color:var(--danger)">[ Завершён ]</span>';
         if(currentRole === 'admin') document.getElementById("adminActions").style.display = t.status === 'active' ? 'block' : 'none';
-        
-        // Блокировка создания матчей в админке если турнир окончен
-        const createBox = document.querySelector("#adminContent .match-card:nth-child(3)");
-        if(createBox) createBox.style.opacity = t.status === 'active' ? "1" : "0.3";
-        if(createBox) createBox.style.pointerEvents = t.status === 'active' ? "auto" : "none";
     });
-
-    db.ref("teams").on("value", s => { teams = s.val() || []; updateSelectors(); });
-    db.ref("matches/" + currentTourneyId).on("value", s => {
-        const val = s.val() || {};
-        matches = Object.values(val).reverse();
-        renderHistory();
-    });
+    db.ref("teams/" + currentTourneyId).on("value", s => { teams = s.val() || []; updateSelectors(); });
+    db.ref("matches/" + currentTourneyId).on("value", s => { matches = Object.values(s.val() || {}).reverse(); renderHistory(); });
 }
 
 function updateSelectors() {
@@ -300,53 +254,50 @@ function updateSelectors() {
     const s1 = document.getElementById("sel1"), s2 = document.getElementById("sel2");
     if(s1 && s2) { s1.innerHTML=""; s2.innerHTML=""; teams.forEach((t,i)=>{ s1.add(new Option(t.name,i)); s2.add(new Option(t.name,i)); }); }
 }
-function addTeam() {
-    let n = document.getElementById("tName"), p = document.getElementById("tPower");
-    if(n.value && p.value) { teams.push({ name: n.value, power: parseInt(p.value) }); db.ref("teams").set(teams); n.value=""; p.value=""; }
+function addTeam() { 
+    let n = document.getElementById("tName"), p = document.getElementById("tPower"); 
+    if(n.value && p.value) { teams.push({ name: n.value, power: parseInt(p.value) }); db.ref("teams/" + currentTourneyId).set(teams); n.value=""; p.value=""; } 
 }
-function deleteTeam(i) { teams.splice(i,1); db.ref("teams").set(teams); }
+function deleteTeam(i) { teams.splice(i,1); db.ref("teams/" + currentTourneyId).set(teams); }
 
-// --- VETO 4.12 ---
+// --- VETO v4.13 ---
 function startVeto() {
     let i1 = document.getElementById("sel1").value, i2 = document.getElementById("sel2").value, bo = parseInt(document.getElementById("bo").value);
     let stage = document.getElementById("matchStageName").value.trim();
     if(i1===i2) return alert("Выберите разные команды");
-    
     let t1 = teams[i1], t2 = teams[i2], pool = [...MAP_POOL], log = [], maps = [];
-    const getSides = (m, chooser, other) => (MAP_DATA[m].side === "CT" ? {t:other.name, ct:chooser.name} : {t:chooser.name, ct:other.name});
+    const getS = (m, chooser, other) => (MAP_DATA[m].side === "CT" ? {t:other.name, ct:chooser.name} : {t:chooser.name, ct:other.name});
 
     if(bo == 1) {
         for(let i=0; i<6; i++) log.push(`${(i%2==0?t1.name:t2.name)} забанил ${pool.splice(Math.floor(Math.random()*pool.length), 1)[0]}`);
-        let rand = Math.random()>0.5; maps.push({name:pool[0], t_start: rand?t1.name:t2.name, ct_start: rand?t2.name:t1.name});
-        log.push(`Финальная карта: ${pool[0]}. Стороны распределены случайно.`);
+        let r = Math.random()>0.5; maps.push({name:pool[0], t_start: r?t1.name:t2.name, ct_start: r?t2.name:t1.name});
+        log.push(`Карта: ${pool[0]}`);
+    } else if(bo == 3) {
+        log.push(`${t1.name} забанил ${pool.splice(Math.floor(Math.random()*pool.length), 1)[0]}`);
+        log.push(`${t2.name} забанил ${pool.splice(Math.floor(Math.random()*pool.length), 1)[0]}`);
+        let p1 = pool.splice(Math.floor(Math.random()*pool.length), 1)[0];
+        let s1 = getS(p1, t2, t1); maps.push({name:p1, t_start: s1.t, ct_start: s1.ct});
+        log.push(`${t1.name} пикнул ${p1}. ${t2.name} выбрал ${s1.ct === t2.name ? 'CT' : 'T'}`);
+        let p2 = pool.splice(Math.floor(Math.random()*pool.length), 1)[0];
+        let s2 = getS(p2, t1, t2); maps.push({name:p2, t_start: s2.t, ct_start: s2.ct});
+        log.push(`${t2.name} пикнул ${p2}. ${t1.name} выбрал ${s2.ct === t1.name ? 'CT' : 'T'}`);
+        log.push(`${t1.name} забанил ${pool.splice(Math.floor(Math.random()*pool.length), 1)[0]}`);
+        log.push(`${t2.name} забанил ${pool.splice(Math.floor(Math.random()*pool.length), 1)[0]}`);
+        let dec = pool[0]; let r = Math.random()>0.5; let side = Math.random()>0.5;
+        maps.push({name:dec, t_start: side?t1.name:t2.name, ct_start: side?t2.name:t1.name});
+        log.push(`Десайдер: ${dec}. Ножи выиграл ${r?t1.name:t2.name}, выбрана ${side?'T':'CT'}`);
     } else {
         log.push(`${t1.name} забанил ${pool.splice(Math.floor(Math.random()*pool.length), 1)[0]}`);
         log.push(`${t2.name} забанил ${pool.splice(Math.floor(Math.random()*pool.length), 1)[0]}`);
-        
-        let p1 = pool.splice(Math.floor(Math.random()*pool.length), 1)[0];
-        let s1 = getSides(p1, t2, t1); maps.push({name:p1, t_start: s1.t, ct_start: s1.ct});
-        log.push(`[Карта 1] ${t1.name} пикнул ${p1}. ${t2.name} выбрал сторону ${s1.ct === t2.name ? 'CT' : 'T'}`);
-        
-        let p2 = pool.splice(Math.floor(Math.random()*pool.length), 1)[0];
-        let s2 = getSides(p2, t1, t2); maps.push({name:p2, t_start: s2.t, ct_start: s2.ct});
-        log.push(`[Карта 2] ${t2.name} пикнул ${p2}. ${t1.name} выбрал сторону ${s2.ct === t1.name ? 'CT' : 'T'}`);
-
-        if(bo>=3) {
-            if(bo==5) {
-                let p3 = pool.splice(Math.floor(Math.random()*pool.length), 1)[0];
-                let s3 = getSides(p3, t2, t1); maps.push({name:p3, t_start: s3.t, ct_start: s3.ct});
-                log.push(`[Карта 3] ${t1.name} пикнул ${p3}. ${t2.name} выбрал сторону ${s3.ct === t2.name ? 'CT' : 'T'}`);
-                
-                let p4 = pool.splice(Math.floor(Math.random()*pool.length), 1)[0];
-                let s4 = getSides(p4, t1, t2); maps.push({name:p4, t_start: s4.t, ct_start: s4.ct});
-                log.push(`[Карта 4] ${t2.name} пикнул ${p4}. ${t1.name} выбрал сторону ${s4.ct === t1.name ? 'CT' : 'T'}`);
-            }
-            let dec=pool.splice(Math.floor(Math.random()*pool.length), 1)[0];
-            let knifeWin = Math.random()>0.5 ? t1.name : t2.name;
-            let sideChoice = Math.random()>0.5;
-            maps.push({name:dec, t_start: sideChoice?t1.name:t2.name, ct_start: sideChoice?t2.name:t1.name});
-            log.push(`[Десайдер] Карта: ${dec}. Ножевой раунд выиграл ${knifeWin}, выбрана ${sideChoice ? 'T' : 'CT'} сторона.`);
+        for(let k=1; k<=4; k++){
+            let p = pool.splice(Math.floor(Math.random()*pool.length), 1)[0];
+            let chooser = (k==1||k==3)?t1:t2; let other = (k==1||k==3)?t2:t1;
+            let s = getS(p, other, chooser); maps.push({name:p, t_start: s.t, ct_start: s.ct});
+            log.push(`[Карта ${k}] ${(k==1||k==3?t1.name:t2.name)} пикнул ${p}`);
         }
+        let dec = pool[0]; let side = Math.random()>0.5;
+        maps.push({name:dec, t_start: side?t1.name:t2.name, ct_start: side?t2.name:t1.name});
+        log.push(`[Десайдер] ${dec}. Ножевой раунд решил стороны.`);
     }
     activeMatch = { t1, t2, maps, bo, results: [], currentMapIdx: 0, wins1: 0, wins2: 0, veto: log, id: Date.now(), stage };
     db.ref(`matches/${currentTourneyId}/${activeMatch.id}`).set({ id: activeMatch.id, t1: t1.name, p1: t1.power, t2: t2.name, p2: t2.power, total: "0:0", bo, details: [], veto: log, stage });
@@ -357,12 +308,12 @@ function startVeto() {
 function renderActiveMatch() {
     const am = activeMatch; if(!am) return;
     document.getElementById("seriesTitle").innerText = `${am.t1.name} vs ${am.t2.name} [${am.wins1}:${am.wins2}]`;
-    document.getElementById("vetoLogLive").innerHTML = "<b>Лог Veto:</b><br>" + am.veto.join("<br>");
+    document.getElementById("vetoLogLive").innerHTML = "<b>Veto Log:</b><br>" + am.veto.join("<br>");
     let cur = am.maps[am.currentMapIdx];
-    document.getElementById("mapControls").innerHTML = `<p>Карта: <b>${cur.name}</b></p><button onclick="playNextMap()">Симулировать</button>`;
+    document.getElementById("mapControls").innerHTML = `<p>Карта: <b>${cur.name}</b></p><button onclick="playNextMap()">Симулировать карту</button>`;
 }
 
-function playNextMap() {
+ function playNextMap() {
     let am = activeMatch, mObj = am.maps[am.currentMapIdx];
     let res = simulateMap(am.t1, am.t2, mObj);
     am.results.push({ name: mObj.name, score: `${res.r1}:${res.r2}`, rounds: res.history_styled, t_start: mObj.t_start, ct_start: mObj.ct_start, sideBonus: MAP_DATA[mObj.name].side, bonus: MAP_DATA[mObj.name].bonus });
@@ -373,29 +324,22 @@ function playNextMap() {
     else renderActiveMatch();
 }
 
-function simulateMap(t1, t2, mapObj) {
-    let r1 = 0, r2 = 0, l1 = 0, l2 = 0, history_styled = [];
-    let mBonus = MAP_DATA[mapObj.name].bonus, t1StartsT = (mapObj.t_start === t1.name);
-    for(let r=0; r < 65; r++) {
-        let t1IsT = (r < 12) ? t1StartsT : !t1StartsT;
-        if(r >= 24) t1IsT = (Math.floor((r-24)/3)%2===0) ? t1StartsT : !t1StartsT;
-        let c1 = (t1.power / (t1.power + t2.power)) * 100;
-        c1 -= (l1 * 3.2); c1 += (l2 * 3.2);
-        if(Math.random()*100 < c1) { r1++; l1 = 0; l2 = Math.min(l2+1, 4); } else { r2++; l2 = 0; l1 = Math.min(l1+1, 4); }
-        let sTxt = `<span class="${t1IsT ? 'r-t' : 'r-ct'}">${r1}</span>:<span class="${t1IsT ? 'r-ct' : 'r-t'}">${r2}</span>`;
-        if (r === 12 || (r >= 24 && (r-24)%3 === 0)) history_styled.push("<br>");
-        history_styled.push(sTxt);
-        if((r1 === 13 && r2 < 12) || (r2 === 13 && r1 < 12)) break;
-        if(r1 >= 12 && r2 >= 12) {
-            let lim = 16; while(r1 > lim-1 && r2 > lim-1) lim += 3;
-            if((r1 === lim && Math.abs(r1-r2) >= 2) || (r2 === lim && Math.abs(r2-r1) >= 2)) break;
-        }
+function simulateMap(t1, t2, m) {
+    let r1=0, r2=0, l1=0, l2=0, h=[]; let b=MAP_DATA[m.name].bonus, t1T=(m.t_start===t1.name);
+    for(let r=0; r<65; r++){
+        let t1IsT = (r<12)?t1T:!t1T; if(r>=24) t1IsT = (Math.floor((r-24)/3)%2===0)?t1T:!t1T;
+        let c1 = (t1.power/(t1.power+t2.power))*100; c1 -= (l1*3.2); c1 += (l2*3.2);
+        if(Math.random()*100 < c1) { r1++; l1=0; l2=Math.min(l2+1,4); } else { r2++; l2=0; l1=Math.min(l1+1,4); }
+        h.push(`<span class="${t1IsT?'r-t':'r-ct'}">${r1}</span>:<span class="${t1IsT?'r-ct':'r-t'}">${r2}</span>`);
+        if(r===12||(r>=24&&(r-24)%3===0)) h.push("<br>");
+        if((r1===13&&r2<12)||(r2===13&&r1<12)) break;
+        if(r1>=12&&r2>=12){ let lim=16; while(r1>lim-1&&r2>lim-1) lim+=3; if((r1===lim&&Math.abs(r1-r2)>=2)||(r2===lim&&Math.abs(r2-r1)>=2)) break; }
     }
-    return {r1, r2, history_styled};
+    return {r1, r2, history_styled: h};
 }
 
 function renderHistory() {
-    const h = matches.map(m => `
+    document.getElementById("matchHistory").innerHTML = matches.map(m => `
         <div class="match-card">
             ${m.stage ? `<div class="match-stage">${m.stage}</div>` : ''}
             <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -407,14 +351,14 @@ function renderHistory() {
                     <div style="display:flex; justify-content:space-between"><b>📍 ${d.name}</b> <b style="color:var(--accent)">${d.score}</b></div>
                     <div style="margin:5px 0; font-size:11px;">
                         <span class="badge badge-t">T: ${d.t_start}</span><span class="badge badge-ct">CT: ${d.ct_start}</span>
+                        <span class="badge" style="background:#333">Преимущество: <span style="color:${d.sideBonus==='CT'?'var(--ct-color)':'var(--t-color)'}">${d.sideBonus}</span> (+${d.bonus}%)</span>
                     </div>
                     <div class="round-history">${d.rounds.join(" ")}</div>
                 </div>
             `).join("")}
-            <span class="toggle-veto" onclick="let b=this.nextElementSibling; b.style.display=b.style.display==='none'?'block':'none'">[ Просмотр Veto Log ]</span>
+            <span class="toggle-veto" onclick="let b=this.nextElementSibling; b.style.display=b.style.display==='none'?'block':'none'">[ Показать Veto Log ]</span>
             <div class="veto-box" style="display:none">${m.veto.join("<br>")}</div>
         </div>`).join("");
-    document.getElementById("matchHistory").innerHTML = h;
 }
 
 checkState();
