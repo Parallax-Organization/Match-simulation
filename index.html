@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<title>ESPORTS MANAGER v4.14 PRO</title>
+<title>ESPORTS MANAGER v4.15 PRO</title>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 
@@ -14,7 +14,6 @@
     h1 { color: var(--accent); margin: 0; text-align: center; letter-spacing: 2px; text-transform: uppercase; font-size: 2em; }
     .sub-title { color: var(--info); text-align: center; font-weight: bold; letter-spacing: 5px; margin-bottom: 25px; font-size: 0.8em; }
 
-    /* Changelog */
     .changelog-container { background: #0a0c14; border: 1px solid #333; padding: 20px; border-radius: 12px; margin-bottom: 30px; border-left: 4px solid var(--accent); }
     .changelog-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
     .nav-btns { display: flex; gap: 10px; }
@@ -31,7 +30,7 @@
     .tourney-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
     .tourney-card { background: #1f2335; padding: 20px; border-radius: 12px; border: 1px solid #333; text-align: center; cursor: pointer; transition: 0.3s; position: relative; }
     .tourney-card:hover { border-color: var(--accent); transform: scale(1.02); }
-    .tourney-card.finished { opacity: 0.6; border-color: #444; background: #111; }
+    .tourney-card.finished { opacity: 0.8; border-color: #444; background: #111; }
     .status-badge { font-size: 10px; text-transform: uppercase; padding: 2px 8px; border-radius: 10px; margin-bottom: 10px; display: inline-block; }
     .status-active { background: rgba(0, 255, 65, 0.2); color: var(--accent); }
     .status-finished { background: rgba(255, 75, 43, 0.2); color: var(--danger); }
@@ -59,7 +58,7 @@
 <div class="container">
     <div id="authSection">
         <h1>ESPORTS MANAGER</h1>
-        <div class="sub-title">VERSION 4.14 PRO</div>
+        <div class="sub-title">VERSION 4.15 PRO</div>
         <div class="changelog-container">
             <div class="changelog-header">
                 <span id="verTitle" class="ver-title"></span>
@@ -141,9 +140,13 @@ const MAP_DATA = { "Mirage": { bonus: 1.5, side: "CT" }, "Inferno": { bonus: 2.8
 const MAP_POOL = Object.keys(MAP_DATA);
 
 const UPDATES = [
+    { v: "4.15", items: ["Интеграция бонусов карт напрямую в шанс победы в раунде.", "Улучшена сортировка турниров: свежие завершенные теперь выше старых.", "Исправлен визуальный баг отображения сторон в Veto при ножевом раунде.", "Полное восстановление истории Changelog с v4.9."] },
     { v: "4.14", items: ["Исправлен Veto Log для всех форматов: Bo1, Bo3, Bo5.", "В Bo1 возвращена информация о случайном выборе сторон.", "В Bo5 теперь корректно отображаются пики сторон и ножевой раунд.", "Сохранены цветовые индикаторы бонусов карт.", "Полная изоляция команд внутри турниров."] },
     { v: "4.13", items: ["Команды теперь уникальны для каждого турнира.", "Bo3 Veto: Бан-Бан, Пик-Пик, Бан-Бан, Десайдер.", "Вернули бонусы сторон с цветовой подсветкой."] },
-    { v: "4.12", items: ["Anti-322: Удаление матчей запрещено.", "Статусы турниров: Идёт/Завершён.", "Названия стадий матчей (Финал, Полуфинал)."] }
+    { v: "4.12", items: ["Anti-322: Удаление матчей запрещено.", "Статусы турниров: Идёт/Завершён.", "Названия стадий матчей (Финал, Полуфинал).", "Улучшен дизайн стрелок и навигации."] },
+    { v: "4.11", items: ["Система вкладок (Турниров).", "Матчи не пересекаются между турнирами.", "Сохранение текущего турнира при обновлении страницы."] },
+    { v: "4.10", items: ["Система MR12 и овертаймы каждые 3 раунда.", "Ножевой раунд на десайдере.", "Расширенное Veto для Bo5."] },
+    { v: "4.9", items: ["Исправление бага Bo5 (счет 2:1).", "Кнопка Показать/Скрыть Veto в истории."] }
 ];
 
 let currentLogIdx = 0, teams = [], tournaments = [], matches = [], activeMatch = null;
@@ -187,7 +190,12 @@ function loadTournaments() {
     db.ref("tournaments").on("value", s => {
         const val = s.val() || {};
         tournaments = Object.keys(val).map(id => ({ id, ...val[id] }));
-        tournaments.sort((a,b) => (a.status === 'active' ? -1 : 1));
+        // Улучшенная сортировка v4.15: Активные сверху, завершенные ниже по убыванию ID (времени)
+        tournaments.sort((a,b) => {
+            if (a.status === 'active' && b.status !== 'active') return -1;
+            if (a.status !== 'active' && b.status === 'active') return 1;
+            return b.id - a.id; 
+        });
         document.getElementById("tourneyList").innerHTML = tournaments.map(t => `
             <div class="tourney-card ${t.status === 'finished' ? 'finished' : ''}" onclick="selectTourney('${t.id}')">
                 <span class="status-badge ${t.status === 'active' ? 'status-active' : 'status-finished'}">${t.status === 'active' ? '• Идёт' : '✓ Завершён'}</span>
@@ -196,7 +204,7 @@ function loadTournaments() {
             </div>`).join("");
     });
 }
-function createTourney() { const n = document.getElementById("newTourneyName").value.trim(); if(n) db.ref("tournaments").push({ name: n, status: "active" }); }
+function createTourney() { const n = document.getElementById("newTourneyName").value.trim(); if(n) db.ref("tournaments").push({ name: n, status: "active", id: Date.now() }); }
 function deleteTourney(id) { if(confirm("Удалить всё?")) { db.ref("tournaments/"+id).remove(); db.ref("matches/"+id).remove(); db.ref("teams/"+id).remove(); } }
 function selectTourney(id) { currentTourneyId = id; localStorage.setItem("es_tourney_id", id); checkState(); }
 function finishTourney() { if(confirm("Завершить турнир?")) db.ref("tournaments/" + currentTourneyId).update({ status: "finished" }); }
@@ -223,7 +231,7 @@ function addTeam() {
 }
 function deleteTeam(i) { teams.splice(i,1); db.ref("teams/" + currentTourneyId).set(teams); }
 
-// --- VETO v4.14 ---
+// --- VETO v4.15 ---
 function startVeto() {
     let i1 = document.getElementById("sel1").value, i2 = document.getElementById("sel2").value, bo = parseInt(document.getElementById("bo").value), stage = document.getElementById("matchStageName").value.trim();
     if(i1===i2) return alert("Выберите разные команды");
@@ -233,7 +241,7 @@ function startVeto() {
     if(bo == 1) {
         for(let i=0; i<6; i++) log.push(`${(i%2==0?t1.name:t2.name)} забанил ${pool.splice(Math.floor(Math.random()*pool.length), 1)[0]}`);
         let rSide = Math.random()>0.5; maps.push({name:pool[0], t_start: rSide?t1.name:t2.name, ct_start: rSide?t2.name:t1.name});
-        log.push(`Финальная карта: ${pool[0]}. Стороны выбраны случайно: ${rSide ? t1.name : t2.name} за T.`);
+        log.push(`Финальная карта: ${pool[0]}. Стороны: ${rSide ? t1.name : t2.name} за T.`);
     } else if(bo == 3) {
         log.push(`${t1.name} забанил ${pool.splice(Math.floor(Math.random()*pool.length), 1)[0]}`);
         log.push(`${t2.name} забанил ${pool.splice(Math.floor(Math.random()*pool.length), 1)[0]}`);
@@ -245,9 +253,13 @@ function startVeto() {
         log.push(`[Карта 2] ${t2.name} пикнул ${p2}. ${t1.name} выбрал ${s2.ct === t1.name ? 'CT' : 'T'}`);
         log.push(`${t1.name} забанил ${pool.splice(Math.floor(Math.random()*pool.length), 1)[0]}`);
         log.push(`${t2.name} забанил ${pool.splice(Math.floor(Math.random()*pool.length), 1)[0]}`);
-        let dec = pool[0]; let kw = Math.random()>0.5?t1.name:t2.name; let side = Math.random()>0.5;
+        let dec = pool[0]; let kwId = Math.random()>0.5; let kw = kwId?t1.name:t2.name; 
+        let strongSide = MAP_DATA[dec].side;
+        let side = Math.random()>0.5; // true = T, false = CT
         maps.push({name:dec, t_start: side?t1.name:t2.name, ct_start: side?t2.name:t1.name});
-        log.push(`[Десайдер] ${dec}. Ножевой раунд выиграл ${kw}, выбрана ${side?'T':'CT'} сторона.`);
+        // Фикс отображения v4.15
+        let chosenSide = (side && kw === t1.name) || (!side && kw === t2.name) ? 'T' : 'CT';
+        log.push(`[Десайдер] ${dec}. Ножи выиграл ${kw}, выбрана ${chosenSide} сторона.`);
     } else {
         log.push(`${t1.name} забанил ${pool.splice(Math.floor(Math.random()*pool.length), 1)[0]}`);
         log.push(`${t2.name} забанил ${pool.splice(Math.floor(Math.random()*pool.length), 1)[0]}`);
@@ -259,7 +271,8 @@ function startVeto() {
         }
         let dec = pool[0]; let kw = Math.random()>0.5?t1.name:t2.name; let side = Math.random()>0.5;
         maps.push({name:dec, t_start: side?t1.name:t2.name, ct_start: side?t2.name:t1.name});
-        log.push(`[Десайдер] ${dec}. Ножевой раунд выиграл ${kw}, выбрана ${side?'T':'CT'} сторона.`);
+        let chosenSide = (side && kw === t1.name) || (!side && kw === t2.name) ? 'T' : 'CT';
+        log.push(`[Десайдер] ${dec}. Ножи выиграл ${kw}, выбрана ${chosenSide} сторона.`);
     }
     activeMatch = { t1, t2, maps, bo, results: [], currentMapIdx: 0, wins1: 0, wins2: 0, veto: log, id: Date.now(), stage };
     db.ref(`matches/${currentTourneyId}/${activeMatch.id}`).set({ id: activeMatch.id, t1: t1.name, p1: t1.power, t2: t2.name, p2: t2.power, total: "0:0", bo, details: [], veto: log, stage });
@@ -287,11 +300,28 @@ function playNextMap() {
 }
 
 function simulateMap(t1, t2, m) {
-    let r1=0, r2=0, l1=0, l2=0, h=[]; let b=MAP_DATA[m.name].bonus, t1T=(m.t_start===t1.name);
+    let r1=0, r2=0, l1=0, l2=0, h=[]; 
+    let b = MAP_DATA[m.name].bonus; 
+    let sideStrong = MAP_DATA[m.name].side;
+    let t1T = (m.t_start === t1.name);
+
     for(let r=0; r<65; r++){
-        let t1IsT = (r<12)?t1T:!t1T; if(r>=24) t1IsT = (Math.floor((r-24)/3)%2===0)?t1T:!t1T;
-        let c1 = (t1.power/(t1.power+t2.power))*100; c1 -= (l1*3.2); c1 += (l2*3.2);
-        if(Math.random()*100 < c1) { r1++; l1=0; l2=Math.min(l2+1,4); } else { r2++; l2=0; l1=Math.min(l1+1,4); }
+        let t1IsT = (r < 12) ? t1T : !t1T; 
+        if(r >= 24) t1IsT = (Math.floor((r-24)/3) % 2 === 0) ? t1T : !t1T;
+
+        let c1 = (t1.power / (t1.power + t2.power)) * 100;
+        // Математика бонусов v4.15
+        if (sideStrong === "CT") {
+            if (!t1IsT) c1 += b; else c1 -= b; 
+        } else {
+            if (t1IsT) c1 += b; else c1 -= b;
+        }
+
+        c1 -= (l1 * 3.2); c1 += (l2 * 3.2);
+
+        if(Math.random() * 100 < c1) { r1++; l1=0; l2 = Math.min(l2+1, 4); } 
+        else { r2++; l2=0; l1 = Math.min(l1+1, 4); }
+        
         h.push(`<span class="${t1IsT?'r-t':'r-ct'}">${r1}</span>:<span class="${t1IsT?'r-ct':'r-t'}">${r2}</span>`);
         if(r===12||(r>=24&&(r-24)%3===0)) h.push("<br>");
         if((r1===13&&r2<12)||(r2===13&&r1<12)) break;
