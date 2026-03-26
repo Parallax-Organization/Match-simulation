@@ -363,4 +363,61 @@ function renderActiveMatch() {
 }
 
 function playNextMap() {
-    let am = activeMatch, mObj = am.maps[am.cu
+    let am = activeMatch, mObj = am.maps[am.currentMapIdx];
+    let res = simulateMap(am.t1, am.t2, mObj);
+    am.results.push({ name: mObj.name, score: `${res.r1}:${res.r2}`, rounds: res.history_styled, t_start: mObj.t_start, ct_start: mObj.ct_start, sideBonus: MAP_DATA[mObj.name].side, bonus: MAP_DATA[mObj.name].bonus });
+    if(res.r1 > res.r2) am.wins1++; else am.wins2++;
+    am.currentMapIdx++;
+    db.ref(`matches/${currentTourneyId}/${am.id}`).update({ total: `${am.wins1}:${am.wins2}`, details: am.results });
+    if(am.wins1 >= Math.ceil(am.bo/2) || am.wins2 >= Math.ceil(am.bo/2)) { activeMatch = null; document.getElementById("currentSeriesDisplay").style.display="none"; } 
+    else renderActiveMatch();
+}
+
+function simulateMap(t1, t2, mapObj) {
+    let r1 = 0, r2 = 0, l1 = 0, l2 = 0, history_styled = [];
+    let mBonus = MAP_DATA[mapObj.name].bonus, t1StartsT = (mapObj.t_start === t1.name);
+    for(let r=0; r < 65; r++) {
+        let t1IsT = (r < 12) ? t1StartsT : !t1StartsT;
+        if(r >= 24) t1IsT = (Math.floor((r-24)/3)%2===0) ? t1StartsT : !t1StartsT;
+        let c1 = (t1.power / (t1.power + t2.power)) * 100;
+        c1 -= (l1 * 3.2); c1 += (l2 * 3.2);
+        if(Math.random()*100 < c1) { r1++; l1 = 0; l2 = Math.min(l2+1, 4); } else { r2++; l2 = 0; l1 = Math.min(l1+1, 4); }
+        let sTxt = `<span class="${t1IsT ? 'r-t' : 'r-ct'}">${r1}</span>:<span class="${t1IsT ? 'r-ct' : 'r-t'}">${r2}</span>`;
+        if (r === 12 || (r >= 24 && (r-24)%3 === 0)) history_styled.push("<br>");
+        history_styled.push(sTxt);
+        if((r1 === 13 && r2 < 12) || (r2 === 13 && r1 < 12)) break;
+        if(r1 >= 12 && r2 >= 12) {
+            let lim = 16; while(r1 > lim-1 && r2 > lim-1) lim += 3;
+            if((r1 === lim && Math.abs(r1-r2) >= 2) || (r2 === lim && Math.abs(r2-r1) >= 2)) break;
+        }
+    }
+    return {r1, r2, history_styled};
+}
+
+function renderHistory() {
+    const h = matches.map(m => `
+        <div class="match-card">
+            ${m.stage ? `<div class="match-stage">${m.stage}</div>` : ''}
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span><b>${m.t1}</b> vs <b>${m.t2}</b> <small>Bo${m.bo}</small></span>
+                <b style="color:var(--accent); font-size:1.5em;">${m.total}</b>
+            </div>
+            ${(m.details || []).map(d => `
+                <div class="map-row">
+                    <div style="display:flex; justify-content:space-between"><b>📍 ${d.name}</b> <b style="color:var(--accent)">${d.score}</b></div>
+                    <div style="margin:5px 0; font-size:11px;">
+                        <span class="badge badge-t">T: ${d.t_start}</span><span class="badge badge-ct">CT: ${d.ct_start}</span>
+                    </div>
+                    <div class="round-history">${d.rounds.join(" ")}</div>
+                </div>
+            `).join("")}
+            <span class="toggle-veto" onclick="let b=this.nextElementSibling; b.style.display=b.style.display==='none'?'block':'none'">[ Просмотр Veto Log ]</span>
+            <div class="veto-box" style="display:none">${m.veto.join("<br>")}</div>
+        </div>`).join("");
+    document.getElementById("matchHistory").innerHTML = h;
+}
+
+checkState();
+</script>
+</body>
+</html>
