@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<title>ESPORTS MANAGER v4.10 ULTIMATE</title>
+<title>ESPORTS MANAGER v4.11 TOURNAMENTS</title>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 
@@ -14,34 +14,38 @@
     h1 { color: var(--accent); margin: 0; text-align: center; letter-spacing: 2px; text-transform: uppercase; font-size: 2.2em; }
     .sub-title { color: var(--info); text-align: center; font-weight: bold; letter-spacing: 5px; margin-bottom: 25px; font-size: 0.8em; }
 
-    /* Красивый Changelog с навигацией */
+    /* Обновления */
     .changelog-container { background: #0a0c14; border: 1px solid #333; padding: 20px; border-radius: 10px; margin-bottom: 30px; position: relative; }
     .changelog-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #222; padding-bottom: 10px; margin-bottom: 10px; }
-    .changelog-nav { display: flex; gap: 15px; }
     .nav-btn { cursor: pointer; color: var(--accent); font-weight: bold; font-size: 20px; user-select: none; }
-    .nav-btn:hover { color: white; }
     .changelog-content { font-size: 13px; color: #bbb; min-height: 60px; }
-    .ver-title { color: var(--info); font-weight: bold; font-size: 1.1em; }
+    .ver-title { color: var(--info); font-weight: bold; }
 
     input, select { background: #1f2335; border: 1px solid #414868; color: white; padding: 12px; border-radius: 8px; margin: 5px; font-size: 14px; }
     button { background: var(--accent); color: #000; border: none; padding: 12px 25px; border-radius: 8px; cursor: pointer; font-weight: bold; text-transform: uppercase; transition: 0.3s; }
-    button:hover { filter: brightness(1.2); transform: translateY(-1px); }
+    button:hover { filter: brightness(1.2); }
     
+    /* Стили турниров */
+    .tourney-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
+    .tourney-card { background: #1f2335; padding: 20px; border-radius: 10px; border: 1px solid #333; text-align: center; cursor: pointer; transition: 0.2s; position: relative; }
+    .tourney-card:hover { border-color: var(--accent); background: #252a3f; }
+    .delete-tourney { position: absolute; top: 5px; right: 5px; color: var(--danger); font-size: 12px; padding: 5px; }
+
     .team-item { display: flex; justify-content: space-between; background: #1f2335; padding: 12px; margin: 8px 0; border-radius: 8px; border-left: 4px solid var(--info); }
-    .match-card { background: #1f2335; padding: 20px; border-radius: 12px; margin-bottom: 20px; border-left: 5px solid var(--accent); position: relative; }
+    .match-card { background: #1f2335; padding: 20px; border-radius: 12px; margin-bottom: 20px; border-left: 5px solid var(--accent); }
     .map-row { background: rgba(0,0,0,0.3); padding: 15px; margin: 15px 0; border-radius: 10px; border: 1px solid #333; }
     
-    .round-history { font-family: 'Courier New', monospace; background: #050505; padding: 15px; border-radius: 8px; margin-top: 10px; line-height: 1.8; font-size: 13px; border: 1px solid #1a1a1a; }
+    .round-history { font-family: 'Courier New', monospace; background: #050505; padding: 15px; border-radius: 8px; margin-top: 10px; line-height: 1.8; font-size: 13px; }
     .r-t { color: var(--t-color); font-weight: bold; }
     .r-ct { color: var(--ct-color); font-weight: bold; }
 
     .badge { padding: 4px 10px; border-radius: 4px; font-size: 11px; font-weight: bold; margin-right: 8px; display: inline-block; }
     .badge-t { background: var(--t-color); color: white; }
     .badge-ct { background: var(--ct-color); color: white; }
-    .badge-adv { background: #2d334a; color: #aaa; border: 1px solid #444; }
-
-    .veto-box { background: #0a0c14; padding: 15px; border-radius: 8px; font-family: monospace; font-size: 12px; margin-top: 15px; color: #888; border: 1px dashed #444; line-height: 1.6; }
-    .toggle-veto { color: var(--info); cursor: pointer; font-size: 12px; text-decoration: underline; margin-top: 15px; display: block; font-weight: bold; }
+    .veto-box { background: #0a0c14; padding: 15px; border-radius: 8px; font-family: monospace; font-size: 12px; margin-top: 15px; color: #888; border: 1px dashed #444; }
+    .toggle-veto { color: var(--info); cursor: pointer; font-size: 12px; text-decoration: underline; margin-top: 15px; display: block; }
+    
+    .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: #0a0c14; padding: 10px 20px; border-radius: 10px; }
 </style>
 </head>
 <body>
@@ -49,69 +53,76 @@
 <div class="container">
     <div id="authSection">
         <h1>ESPORTS MANAGER</h1>
-        <div class="sub-title">СИМУЛЯТОР МАТЧЕЙ v4.10</div>
+        <div class="sub-title">VERSION 4.11 PLATFORM</div>
 
         <div class="changelog-container">
             <div class="changelog-header">
-                <span id="verTitle" class="ver-title">Версия 4.10</span>
+                <span id="verTitle" class="ver-title"></span>
                 <div class="changelog-nav">
                     <span class="nav-btn" onclick="changeLog(-1)">❮</span>
                     <span class="nav-btn" onclick="changeLog(1)">❯</span>
                 </div>
             </div>
-            <div id="changelogContent" class="changelog-content">
-                Загрузка истории обновлений...
-            </div>
+            <div id="changelogContent" class="changelog-content"></div>
         </div>
 
         <div style="text-align: center;">
-            <input type="password" id="pass" placeholder="Пароль администратора">
+            <input type="password" id="pass" placeholder="Пароль">
             <div style="margin-top: 20px;">
-                <button onclick="auth(true)">Админ-панель</button>
-                <button onclick="auth(false)" style="background: #414868; color: white;">Режим зрителя</button>
+                <button onclick="auth(true)">Админ</button>
+                <button onclick="auth(false)" style="background: #414868; color: white;">Зритель</button>
             </div>
         </div>
     </div>
 
-    <div id="adminPanel" style="display:none;">
-        <button onclick="logout()" style="float:right; background:#444; color:white;">Выход</button>
-        <h3>Управление командами</h3>
-        <div class="match-card">
-            <input type="text" id="tName" placeholder="Название команды">
-            <input type="number" id="tPower" placeholder="Сила (Power)">
-            <button onclick="addTeam()">Добавить</button>
-            <div id="teamsDisplay" style="margin-top:15px;"></div>
+    <div id="tourneySection" style="display:none;">
+        <button onclick="logout()" style="float:right; background:#444; color:white;">Выйти из аккаунта</button>
+        <h2 id="tourneyHealder">Выберите турнир</h2>
+        
+        <div id="adminTourneyCreate" style="display:none; margin-bottom:20px;">
+            <input type="text" id="newTourneyName" placeholder="Название турнира">
+            <button onclick="createTourney()">Создать турнир</button>
         </div>
 
-        <div class="match-card">
-            <select id="sel1"></select> <b style="color:var(--accent)">VS</b> <select id="sel2"></select>
-            <select id="bo">
-                <option value="1">Bo1</option>
-                <option value="3">Bo3</option>
-                <option value="5">Bo5</option>
-            </select>
-            <button onclick="startVeto()" style="background:var(--info); color:white;">Начать Veto</button>
-        </div>
-
-        <div id="currentSeriesDisplay" style="display:none;" class="match-card" style="border: 2px solid var(--info);">
-            <h2 id="seriesTitle" style="margin-top:0;"></h2>
-            <div id="vetoLogLive" class="veto-box" style="margin-bottom: 20px; color: #eee; border-style: solid;"></div>
-            <div id="mapControls" style="text-align:center;"></div>
-        </div>
-
-        <div id="matchHistoryAdmin"></div>
-        <button style="background:var(--danger); color:white; width:100%; margin-top:40px; opacity:0.5" onclick="clearCloud()">СБРОСИТЬ ВСЮ БАЗУ</button>
+        <div id="tourneyList" class="tourney-grid"></div>
     </div>
 
-    <div id="viewerPanel" style="display:none;">
-        <button onclick="logout()" style="float:right; background:#444; color:white;">Выход</button>
-        <h1>LIVE ТРАНСЛЯЦИЯ</h1>
-        <div id="matchHistoryViewer"></div>
+    <div id="mainPanel" style="display:none;">
+        <div class="top-bar">
+            <div>Турнир: <b id="activeTourneyName" style="color:var(--accent)"></b></div>
+            <div>
+                <button onclick="exitTourney()" style="background:#444; color:white; padding: 5px 10px; font-size:12px;">Выйти из турнира</button>
+                <button onclick="logout()" style="background:var(--danger); color:white; padding: 5px 10px; font-size:12px;">Logout</button>
+            </div>
+        </div>
+
+        <div id="adminContent" style="display:none;">
+            <div class="match-card">
+                <h3>Команды</h3>
+                <input type="text" id="tName" placeholder="Название">
+                <input type="number" id="tPower" placeholder="Сила">
+                <button onclick="addTeam()">+</button>
+                <div id="teamsDisplay" style="margin-top:10px;"></div>
+            </div>
+            <div class="match-card">
+                <h3>Запустить матч</h3>
+                <select id="sel1"></select> VS <select id="sel2"></select>
+                <select id="bo"><option value="1">Bo1</option><option value="3">Bo3</option><option value="5">Bo5</option></select>
+                <button onclick="startVeto()" style="background:var(--info); color:white;">Начать Veto</button>
+            </div>
+            <div id="currentSeriesDisplay" style="display:none;" class="match-card" style="border-color:var(--info)">
+                <h2 id="seriesTitle"></h2>
+                <div id="vetoLogLive" class="veto-box" style="margin-bottom:15px; color:white;"></div>
+                <div id="mapControls" style="text-align:center;"></div>
+            </div>
+        </div>
+
+        <div id="matchHistory"></div>
     </div>
 </div>
 
 <script>
-// --- КОНФИГ И ДАННЫЕ ---
+// --- FB CONFIG ---
 const firebaseConfig = {
   apiKey: "AIzaSyDaZmAmodUvLKcPSJ85SImjtBKdAIUUd_s",
   authDomain: "match-simulation.firebaseapp.com",
@@ -124,119 +135,165 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-const MAP_DATA = { 
-    "Mirage": { bonus: 1.5, side: "CT" }, "Inferno": { bonus: 2.8, side: "CT" }, "Nuke": { bonus: 3.5, side: "CT" }, 
-    "Ancient": { bonus: 2.2, side: "CT" }, "Anubis": { bonus: 2.0, side: "T" }, "Dust2": { bonus: 0.7, side: "T" }, "Vertigo": { bonus: 1.2, side: "CT" } 
-};
+const MAP_DATA = { "Mirage": { bonus: 1.5, side: "CT" }, "Inferno": { bonus: 2.8, side: "CT" }, "Nuke": { bonus: 3.5, side: "CT" }, "Ancient": { bonus: 2.2, side: "CT" }, "Anubis": { bonus: 2.0, side: "T" }, "Dust2": { bonus: 0.7, side: "T" }, "Vertigo": { bonus: 1.2, side: "CT" } };
 const MAP_POOL = Object.keys(MAP_DATA);
-
 const UPDATES = [
-    { v: "4.10", text: "Глобальное обновление навигации. Добавлен интерактивный Changelog со стрелками. Исправлено Veto для Bo5 (теперь стороны выбираются на все 5 карт). Добавлен лог ножевого раунда на десайдере. Полный перевод интерфейса на русский язык." },
-    { v: "4.9", text: "Исправлен баг завершения серии Bo5 при счете 2:1. Добавлены автоматические переносы строк в овертаймах (каждые 3 раунда). Добавлена кнопка Скрыть/Показать лог Veto в истории матчей." },
-    { v: "4.8", text: "Внедрена цветная история раундов. Теперь счет за Т - оранжевый, за CT - синий. Добавлен перенос строки на 12-м раунде (смена сторон). Возвращен показ силы команд в скобках." },
-    { v: "4.7", text: "Список команд переделан в вертикальный столбик для удобства удаления. Добавлены бейджи преимущества карт (Advantage) в историю." }
+    { v: "4.11", text: "Система вкладок (Турниров). Теперь можно разделять матчи по разным ивентам. Добавлено сохранение текущего турнира при обновлении страницы. Возможность удаления турниров админом." },
+    { v: "4.10", text: "Интерактивный лог обновлений со стрелками. Расширенное Veto для Bo5 (выбор сторон на все карты). Ножевой раунд на десайдере. Полный русский перевод." },
+    { v: "4.9", text: "Фикс Bo5 (2:1). Переносы строк каждые 3 раунда в овертаймах. Кнопка скрыть/показать Veto в истории." }
 ];
 
 let currentLogIdx = 0;
-let teams = [], matches = [], activeMatch = null;
+let teams = [], tournaments = [], matches = [], activeMatch = null;
+let currentRole = sessionStorage.getItem("es_role");
+let currentTourney = localStorage.getItem("es_tourney");
 
-// --- ЛОГИКА ВХОДА ---
+// --- NAVIGATION & AUTH ---
 function changeLog(dir) {
-    currentLogIdx += dir;
-    if(currentLogIdx < 0) currentLogIdx = UPDATES.length - 1;
-    if(currentLogIdx >= UPDATES.length) currentLogIdx = 0;
+    currentLogIdx = (currentLogIdx + dir + UPDATES.length) % UPDATES.length;
     renderLog();
 }
 function renderLog() {
-    const up = UPDATES[currentLogIdx];
-    document.getElementById("verTitle").innerText = "Версия " + up.v;
-    document.getElementById("changelogContent").innerText = up.text;
+    document.getElementById("verTitle").innerText = "Версия " + UPDATES[currentLogIdx].v;
+    document.getElementById("changelogContent").innerText = UPDATES[currentLogIdx].text;
 }
 renderLog();
 
 function auth(isAdmin) {
-    if(isAdmin && document.getElementById("pass").value !== "1234") return alert("Доступ запрещен!");
-    sessionStorage.setItem("es_role", isAdmin ? "admin" : "viewer");
-    checkAuth();
-}
-function logout() { sessionStorage.removeItem("es_role"); location.reload(); }
-function checkAuth() {
-    const r = sessionStorage.getItem("es_role");
-    document.getElementById("authSection").style.display = !r ? "block" : "none";
-    document.getElementById("adminPanel").style.display = r === "admin" ? "block" : "none";
-    document.getElementById("viewerPanel").style.display = r === "viewer" ? "block" : "none";
+    if(isAdmin && document.getElementById("pass").value !== "1234") return alert("Неверный пароль!");
+    currentRole = isAdmin ? "admin" : "viewer";
+    sessionStorage.setItem("es_role", currentRole);
+    checkState();
 }
 
-// --- УПРАВЛЕНИЕ КОМАНДАМИ ---
-db.ref("teams").on("value", s => { teams = s.val() || []; updateSelectors(); });
-db.ref("matches").on("value", s => { matches = s.val() || []; renderHistory(); });
+function logout() {
+    sessionStorage.clear();
+    localStorage.clear();
+    location.reload();
+}
+
+function exitTourney() {
+    localStorage.removeItem("es_tourney");
+    currentTourney = null;
+    checkState();
+}
+
+function checkState() {
+    document.getElementById("authSection").style.display = !currentRole ? "block" : "none";
+    
+    if(currentRole) {
+        if(!currentTourney) {
+            document.getElementById("tourneySection").style.display = "block";
+            document.getElementById("mainPanel").style.display = "none";
+            document.getElementById("adminTourneyCreate").style.display = currentRole === "admin" ? "block" : "none";
+            loadTournaments();
+        } else {
+            document.getElementById("tourneySection").style.display = "none";
+            document.getElementById("mainPanel").style.display = "block";
+            document.getElementById("adminContent").style.display = currentRole === "admin" ? "block" : "none";
+            document.getElementById("activeTourneyName").innerText = currentTourney;
+            loadTourneyData();
+        }
+    }
+}
+
+// --- TOURNAMENTS LOGIC ---
+function loadTournaments() {
+    db.ref("tournaments").on("value", s => {
+        tournaments = s.val() || [];
+        const list = document.getElementById("tourneyList");
+        list.innerHTML = tournaments.map(t => `
+            <div class="tourney-card" onclick="selectTourney('${t}')">
+                <b>${t}</b>
+                ${currentRole === 'admin' ? `<span class="delete-tourney" onclick="event.stopPropagation(); deleteTourney('${t}')">Удалить</span>` : ''}
+            </div>
+        `).join("");
+    });
+}
+
+function createTourney() {
+    const name = document.getElementById("newTourneyName").value.trim();
+    if(name && !tournaments.includes(name)) {
+        tournaments.push(name);
+        db.ref("tournaments").set(tournaments);
+        document.getElementById("newTourneyName").value = "";
+    }
+}
+
+function deleteTourney(name) {
+    if(confirm(`Удалить турнир "${name}" и ВСЕ его матчи?`)) {
+        const idx = tournaments.indexOf(name);
+        tournaments.splice(idx, 1);
+        db.ref("tournaments").set(tournaments);
+        db.ref("matches/" + name).remove();
+    }
+}
+
+function selectTourney(name) {
+    currentTourney = name;
+    localStorage.setItem("es_tourney", name);
+    checkState();
+}
+
+// --- MATCH LOGIC (SCOPED TO TOURNEY) ---
+function loadTourneyData() {
+    db.ref("teams").on("value", s => { teams = s.val() || []; updateSelectors(); });
+    db.ref("matches/" + currentTourney).on("value", s => {
+        const val = s.val() || {};
+        matches = Object.values(val).reverse();
+        renderHistory();
+    });
+}
+
+function updateSelectors() {
+    const d = document.getElementById("teamsDisplay");
+    if(d) d.innerHTML = teams.map((t,i)=>`<div class="team-item"><span>${t.name} (${t.power})</span><b onclick="deleteTeam(${i})" style="color:red;cursor:pointer;">X</b></div>`).join("");
+    const s1 = document.getElementById("sel1"), s2 = document.getElementById("sel2");
+    if(s1 && s2) { s1.innerHTML=""; s2.innerHTML=""; teams.forEach((t,i)=>{ s1.add(new Option(t.name,i)); s2.add(new Option(t.name,i)); }); }
+}
 
 function addTeam() {
     let n = document.getElementById("tName"), p = document.getElementById("tPower");
     if(n.value && p.value) { teams.push({ name: n.value, power: parseInt(p.value) }); db.ref("teams").set(teams); n.value=""; p.value=""; }
 }
-function updateSelectors() {
-    const d = document.getElementById("teamsDisplay");
-    if(d) d.innerHTML = teams.map((t,i)=>`<div class="team-item"><span><b>${t.name}</b> (${t.power})</span><b onclick="deleteTeam(${i})" style="color:var(--danger);cursor:pointer;">Удалить</b></div>`).join("");
-    const s1 = document.getElementById("sel1"), s2 = document.getElementById("sel2");
-    if(s1 && s2) { s1.innerHTML=""; s2.innerHTML=""; teams.forEach((t,i)=>{ s1.add(new Option(t.name,i)); s2.add(new Option(t.name,i)); }); }
-}
-function deleteTeam(i) { if(confirm("Удалить команду?")) { teams.splice(i,1); db.ref("teams").set(teams); } }
+function deleteTeam(i) { teams.splice(i,1); db.ref("teams").set(teams); }
 
-// --- СИСТЕМА VETO ---
+// --- VETO & SIMULATION (Same as 4.10) ---
 function startVeto() {
     let i1 = document.getElementById("sel1").value, i2 = document.getElementById("sel2").value, bo = parseInt(document.getElementById("bo").value);
-    if(i1===i2) return alert("Выберите разные команды!");
+    if(i1===i2) return alert("Выберите разные команды");
     let t1 = teams[i1], t2 = teams[i2], pool = [...MAP_POOL], log = [], maps = [];
-
-    const getSides = (m, chooser, other) => (MAP_DATA[m].side === "CT" ? {t:other.name, ct:chooser.name} : {t:chooser.name, ct:other.name});
+    const getSides = (m, c, o) => (MAP_DATA[m].side === "CT" ? {t:o.name, ct:c.name} : {t:c.name, ct:o.name});
 
     if(bo == 1) {
-        for(let i=0; i<6; i++) {
-            let b = pool.splice(Math.floor(Math.random()*pool.length), 1)[0];
-            log.push(`${(i%2==0?t1.name:t2.name)} забанил ${b}`);
-        }
-        let rand = Math.random()>0.5; 
-        maps.push({name:pool[0], t_start: rand?t1.name:t2.name, ct_start: rand?t2.name:t1.name});
-        log.push(`Финальная карта: ${pool[0]}. Стороны определены жребием.`);
+        for(let i=0; i<6; i++) log.push(`${(i%2==0?t1.name:t2.name)} забанил ${pool.splice(Math.floor(Math.random()*pool.length), 1)[0]}`);
+        let rand = Math.random()>0.5; maps.push({name:pool[0], t_start: rand?t1.name:t2.name, ct_start: rand?t2.name:t1.name});
+        log.push(`Карта: ${pool[0]}`);
     } else {
         log.push(`${t1.name} забанил ${pool.splice(Math.floor(Math.random()*pool.length), 1)[0]}`);
         log.push(`${t2.name} забанил ${pool.splice(Math.floor(Math.random()*pool.length), 1)[0]}`);
-        
-        // Карта 1 (Пик Т1, выбор Т2)
         let p1 = pool.splice(Math.floor(Math.random()*pool.length), 1)[0];
         let s1 = getSides(p1, t2, t1); maps.push({name:p1, t_start: s1.t, ct_start: s1.ct});
-        log.push(`${t1.name} пикнул ${p1}. ${t2.name} выбрал сторону ${s1.ct === t2.name ? 'CT' : 'T'}`);
-
-        // Карта 2 (Пик Т2, выбор Т1)
+        log.push(`${t1.name} пикнул ${p1}. ${t2.name} выбрал ${s1.ct === t2.name ? 'CT' : 'T'}`);
         let p2 = pool.splice(Math.floor(Math.random()*pool.length), 1)[0];
         let s2 = getSides(p2, t1, t2); maps.push({name:p2, t_start: s2.t, ct_start: s2.ct});
-        log.push(`${t2.name} пикнул ${p2}. ${t1.name} выбрал сторону ${s2.ct === t1.name ? 'CT' : 'T'}`);
-
+        log.push(`${t2.name} пикнул ${p2}. ${t1.name} выбрал ${s2.ct === t1.name ? 'CT' : 'T'}`);
         if(bo>=3) {
             if(bo==5) {
-                // Карта 3 (Пик Т1, выбор Т2)
                 let p3 = pool.splice(Math.floor(Math.random()*pool.length), 1)[0];
                 let s3 = getSides(p3, t2, t1); maps.push({name:p3, t_start: s3.t, ct_start: s3.ct});
-                log.push(`${t1.name} пикнул ${p3}. ${t2.name} выбрал сторону ${s3.ct === t2.name ? 'CT' : 'T'}`);
-
-                // Карта 4 (Пик Т2, выбор Т1)
+                log.push(`${t1.name} пикнул ${p3}`);
                 let p4 = pool.splice(Math.floor(Math.random()*pool.length), 1)[0];
                 let s4 = getSides(p4, t1, t2); maps.push({name:p4, t_start: s4.t, ct_start: s4.ct});
-                log.push(`${t2.name} пикнул ${p4}. ${t1.name} выбрал сторону ${s4.ct === t1.name ? 'CT' : 'T'}`);
+                log.push(`${t2.name} пикнул ${p4}`);
             }
-            // Десайдер (Ножи)
-            let dec = pool.splice(Math.floor(Math.random()*pool.length), 1)[0];
-            let rWin = Math.random() > 0.5 ? t1.name : t2.name;
-            let rSide = Math.random() > 0.5;
-            maps.push({name:dec, t_start: rSide?t1.name:t2.name, ct_start: rSide?t2.name:t1.name});
-            log.push(`Десайдер: ${dec}. Ножевой раунд выиграл ${rWin}, выбрана выгодная сторона.`);
+            let dec=pool.splice(Math.floor(Math.random()*pool.length), 1)[0]; let r=Math.random()>0.5;
+            maps.push({name:dec, t_start: r?t1.name:t2.name, ct_start: r?t2.name:t1.name});
+            log.push(`Десайдер (ножи): ${dec}`);
         }
     }
-
     activeMatch = { t1, t2, maps, bo, results: [], currentMapIdx: 0, wins1: 0, wins2: 0, veto: log, id: Date.now() };
-    matches.unshift({ id: activeMatch.id, t1: t1.name, p1: t1.power, t2: t2.name, p2: t2.power, total: "0:0", bo, details: [], veto: log });
-    db.ref("matches").set(matches);
+    db.ref("matches/" + currentTourney + "/" + activeMatch.id).set({ id: activeMatch.id, t1: t1.name, p1: t1.power, t2: t2.name, p2: t2.power, total: "0:0", bo, details: [], veto: log });
     document.getElementById("currentSeriesDisplay").style.display = "block";
     renderActiveMatch();
 }
@@ -244,58 +301,35 @@ function startVeto() {
 function renderActiveMatch() {
     const am = activeMatch; if(!am) return;
     document.getElementById("seriesTitle").innerText = `${am.t1.name} vs ${am.t2.name} [${am.wins1}:${am.wins2}]`;
-    document.getElementById("vetoLogLive").innerHTML = "<b>ПРОТОКОЛ VETO:</b><br>" + am.veto.join("<br>");
+    document.getElementById("vetoLogLive").innerHTML = "<b>Veto:</b><br>" + am.veto.join("<br>");
     let cur = am.maps[am.currentMapIdx];
-    document.getElementById("mapControls").innerHTML = `
-        <div style="margin-bottom:15px;"><span class="badge badge-t">T: ${cur.t_start}</span> <span class="badge badge-ct">CT: ${cur.ct_start}</span></div>
-        <p>Текущая карта: <b style="color:var(--accent); font-size:1.2em;">${cur.name}</b></p>
-        <button onclick="playNextMap()">Симулировать карту</button>`;
+    document.getElementById("mapControls").innerHTML = `<p>Карта: <b>${cur.name}</b></p><button onclick="playNextMap()">Симулировать</button>`;
 }
 
 function playNextMap() {
     let am = activeMatch, mObj = am.maps[am.currentMapIdx];
     let res = simulateMap(am.t1, am.t2, mObj);
-    am.results.push({ name: mObj.name, score: `${res.r1}:${res.r2}`, rounds: res.history_styled, t_start: mObj.t_start, ct_start: mObj.ct_start, bonus: MAP_DATA[mObj.name].bonus, sideBonus: MAP_DATA[mObj.name].side });
-    
+    am.results.push({ name: mObj.name, score: `${res.r1}:${res.r2}`, rounds: res.history_styled, t_start: mObj.t_start, ct_start: mObj.ct_start, sideBonus: MAP_DATA[mObj.name].side, bonus: MAP_DATA[mObj.name].bonus });
     if(res.r1 > res.r2) am.wins1++; else am.wins2++;
     am.currentMapIdx++;
-
-    let mIdx = matches.findIndex(m => m.id === am.id);
-    if(mIdx !== -1) { 
-        matches[mIdx].total = `${am.wins1}:${am.wins2}`; 
-        matches[mIdx].details = am.results; 
-        db.ref("matches").set(matches); 
-    }
-
-    let winThreshold = Math.ceil(am.bo/2);
-    if(am.wins1 >= winThreshold || am.wins2 >= winThreshold) { 
-        setTimeout(() => { alert("Серия завершена!"); activeMatch = null; document.getElementById("currentSeriesDisplay").style.display="none"; }, 500);
-    } else { 
-        renderActiveMatch(); 
-    }
+    db.ref(`matches/${currentTourney}/${am.id}`).update({ total: `${am.wins1}:${am.wins2}`, details: am.results });
+    if(am.wins1 >= Math.ceil(am.bo/2) || am.wins2 >= Math.ceil(am.bo/2)) { activeMatch = null; document.getElementById("currentSeriesDisplay").style.display="none"; } 
+    else renderActiveMatch();
 }
 
-// --- СИМУЛЯЦИЯ ---
 function simulateMap(t1, t2, mapObj) {
     let r1 = 0, r2 = 0, l1 = 0, l2 = 0, history_styled = [];
     let mBonus = MAP_DATA[mapObj.name].bonus, isTMap = MAP_DATA[mapObj.name].side === "T", t1StartsT = (mapObj.t_start === t1.name);
-
-    for(let r=0; r < 65; r++) {
+    for(let r=0; r < 60; r++) {
         let t1IsT = (r < 12) ? t1StartsT : !t1StartsT;
         if(r >= 24) t1IsT = (Math.floor((r-24)/3)%2===0) ? t1StartsT : !t1StartsT;
-        
-        let chance1 = (t1.power / (t1.power + t2.power)) * 100;
-        if(t1IsT) chance1 = isTMap ? (chance1 + mBonus) : (chance1 - mBonus);
-        else chance1 = isTMap ? (chance1 - mBonus) : (chance1 + mBonus);
-        
-        chance1 -= (l1 * 3.2); chance1 += (l2 * 3.2); // Экономика чуть злее
-        if(Math.random()*100 < chance1) { r1++; l1 = 0; l2 = Math.min(l2+1, 4); }
-        else { r2++; l2 = 0; l1 = Math.min(l1+1, 4); }
-        
-        let scoreTxt = `<span class="${t1IsT ? 'r-t' : 'r-ct'}">${r1}</span>:<span class="${t1IsT ? 'r-ct' : 'r-t'}">${r2}</span>`;
+        let c1 = (t1.power / (t1.power + t2.power)) * 100;
+        if(t1IsT) c1 = isTMap ? (c1 + mBonus) : (c1 - mBonus); else c1 = isTMap ? (c1 - mBonus) : (c1 + mBonus);
+        c1 -= (l1 * 3); c1 += (l2 * 3);
+        if(Math.random()*100 < c1) { r1++; l1 = 0; l2 = Math.min(l2+1, 4); } else { r2++; l2 = 0; l1 = Math.min(l1+1, 4); }
+        let sTxt = `<span class="${t1IsT ? 'r-t' : 'r-ct'}">${r1}</span>:<span class="${t1IsT ? 'r-ct' : 'r-t'}">${r2}</span>`;
         if (r === 12 || (r >= 24 && (r-24)%3 === 0)) history_styled.push("<br>");
-        history_styled.push(scoreTxt);
-
+        history_styled.push(sTxt);
         if((r1 === 13 && r2 < 12) || (r2 === 13 && r1 < 12)) break;
         if(r1 >= 12 && r2 >= 12) {
             let lim = 16; while(r1 > lim-1 && r2 > lim-1) lim += 3;
@@ -305,36 +339,31 @@ function simulateMap(t1, t2, mapObj) {
     return {r1, r2, history_styled};
 }
 
-// --- ИСТОРИЯ ---
 function renderHistory() {
-    const draw = (m) => `
+    const h = matches.map(m => `
         <div class="match-card">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <span><b>${m.t1} (${m.p1})</b> vs <b>${m.t2} (${m.p2})</b> <small style="color:var(--info)">Bo${m.bo}</small></span>
-                <span style="color:var(--accent); font-size: 1.5em; font-weight:bold;">${m.total}</span>
+            <div style="display:flex; justify-content:space-between;">
+                <span><b>${m.t1} (${m.p1})</b> vs <b>${m.t2} (${m.p2})</b> <small>Bo${m.bo}</small></span>
+                <b style="color:var(--accent); font-size:1.3em;">${m.total}</b>
             </div>
-            ${m.details.map(d => `
+            ${(m.details || []).map(d => `
                 <div class="map-row">
-                    <div style="display:flex; justify-content:space-between"><b>📍 ${d.name}</b> <b style="color:var(--accent)">${d.score}</b></div>
-                    <div style="margin: 8px 0;">
+                    <div style="display:flex; justify-content:space-between"><b>📍 ${d.name}</b> <b>${d.score}</b></div>
+                    <div style="margin:5px 0; font-size:11px;">
                         <span class="badge badge-t">T: ${d.t_start}</span><span class="badge badge-ct">CT: ${d.ct_start}</span>
-                        <span class="badge badge-adv" style="border-left: 3px solid ${d.sideBonus==='CT'?'var(--ct-color)':'var(--t-color)'}">
-                            Преимущество ${d.sideBonus} (+${d.bonus}%)
-                        </span>
+                        <span class="badge" style="background:#333">Adv: ${d.sideBonus} (+${d.bonus}%)</span>
                     </div>
                     <div class="round-history">${d.rounds.join(" ")}</div>
                 </div>
             `).join("")}
-            <span class="toggle-veto" onclick="let b=this.nextElementSibling; b.style.display=b.style.display==='none'?'block':'none'">[ Показать/Скрыть лог Veto ]</span>
-            <div class="veto-box" style="display:none"><b>ПРОТОКОЛ ВЕТО:</b><br>${m.veto.join("<br>")}</div>
-        </div>`;
-    const h = matches.map(draw).join("");
-    if(document.getElementById("matchHistoryAdmin")) document.getElementById("matchHistoryAdmin").innerHTML = h;
-    if(document.getElementById("matchHistoryViewer")) document.getElementById("matchHistoryViewer").innerHTML = h;
+            <span class="toggle-veto" onclick="let b=this.nextElementSibling; b.style.display=b.style.display==='none'?'block':'none'">[ Показать Veto ]</span>
+            <div class="veto-box" style="display:none">${m.veto.join("<br>")}</div>
+            ${currentRole === 'admin' ? `<button onclick="db.ref('matches/${currentTourney}/${m.id}').remove()" style="background:var(--danger); color:white; padding:2px 10px; font-size:10px; margin-top:10px;">Удалить матч</button>` : ''}
+        </div>`).join("");
+    document.getElementById("matchHistory").innerHTML = h;
 }
 
-function clearCloud() { if(confirm("ВНИМАНИЕ! Это удалит ВСЕ матчи из базы навсегда. Продолжить?")) db.ref("matches").set([]); }
-checkAuth();
+checkState();
 </script>
 </body>
 </html>
