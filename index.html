@@ -4,9 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="Esports Manager Pro - Advanced Match Simulation System">
-<meta name="version" content="4.17.2">
+<meta name="version" content="4.17.3">
 <meta name="author" content="Gemini AI Collaboration">
-<title>MATCH SIMULATION v4.17.2 PRO</title>
+<title>MATCH SIMULATION v4.17.3 PRO</title>
 
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
@@ -313,7 +313,7 @@
 <div class="container">
     <div id="authSection">
         <h1>MATCH SIMULATION</h1>
-        <div class="sub-title">VERSION 4.17.2 PRO</div>
+        <div class="sub-title">VERSION 4.17.3 PRO</div>
         
         <div class="changelog-container">
             <div class="changelog-header">
@@ -435,6 +435,7 @@ const MAP_POOL = Object.keys(MAP_DATA);
 
 // --- CHANGELOG REPOSITORY ---
 const UPDATES = [
+    { v: "4.17.3", items: ["Исправлен визуальный баг с двойным переносом строк (MR12).", "Оптимизирована сетка овертаймов: теперь перенос происходит строго каждые 3 раунда."] },
     { v: "4.17.2", items: ["Исправление бага с входом для зрителей."]},
     { v: "4.17.1", items: ["Исправление багов."]},
     { v: "4.17", items: ["В историю матчей добавлено отображение силы команд в скобках (m.p1, m.p2).", "Исправлен баг выбора сторон после ножей: теперь победитель всегда выбирает бонусную сторону карты.", "Расширена структура CSS для улучшения визуального восприятия интерфейса.", "Добавлена расширенная документация внутри кода для повышения стабильности."] },
@@ -672,10 +673,11 @@ function simulateMap(t1, t2, m) {
         else { r2++; l2=0; l1 = Math.min(l1+1, 4); }
         h.push(`<span class="${t1IsT?'r-t':'r-ct'}">${r1}</span>:<span class="${t1IsT?'r-ct':'r-t'}">${r2}</span>`);
         
-        // НОВЫЙ БЛОК: ПРИНУДИТЕЛЬНЫЙ ПЕРЕНОС MR12 (РАУНД 12)
-        if(r === 11) { h.push("<br> "); }
-        
-        if(r===12||(r>=24&&(r-24)%3===0)) h.push("<br>");
+        // Единая логика переносов: после первой половины (12 раундов) и каждые 3 раунда в допах
+if (r === 11 || (r >= 23 && (r - 23) % 3 === 0)) {
+    h.push("<br>");
+}
+            
         if((r1===13&&r2<12)||(r2===13&&r1<12)) break;
         if(r1>=12&&r2>=12){ let lim=16; while(r1>lim-1&&r2>lim-1) lim+=3; if((r1===lim&&Math.abs(r1-r2)>=2)||(r2===lim&&Math.abs(r2-r1)>=2)) break; }
     }
