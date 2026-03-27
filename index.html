@@ -4,9 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="Esports Manager Pro - Advanced Match Simulation System">
-<meta name="version" content="4.17">
+<meta name="version" content="4.17.1">
 <meta name="author" content="Gemini AI Collaboration">
-<title>ESPORTS MANAGER v4.17 PRO</title>
+<title>MATCH SIMULATION v4.17.1 PRO</title>
 
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
@@ -312,8 +312,8 @@
 
 <div class="container">
     <div id="authSection">
-        <h1>ESPORTS MANAGER</h1>
-        <div class="sub-title">VERSION 4.17 PRO</div>
+        <h1>MATCH SIMULATION</h1>
+        <div class="sub-title">VERSION 4.17.1 PRO</div>
         
         <div class="changelog-container">
             <div class="changelog-header">
@@ -383,9 +383,9 @@
                 </div>
                 <div style="text-align: center;">
                     <select id="bo" style="width: 200px;">
-                        <option value="1">Best of 1 (Мясо)</option>
-                        <option value="3">Best of 3 (Стандарт)</option>
-                        <option value="5">Best of 5 (Марафон)</option>
+                        <option value="1">Best of 1</option>
+                        <option value="3">Best of 3</option>
+                        <option value="5">Best of 5</option>
                     </select>
                     <button onclick="startVeto()" style="background:var(--info); color:white; margin-left:10px;">Запустить Veto</button>
                 </div>
@@ -405,7 +405,7 @@
 
 <script>
 /* ========================================================================
-   CORE ENGINE JAVASCRIPT - v4.17
+   CORE ENGINE JAVASCRIPT - v4.17.1
    ======================================================================== */
 
 // --- FIREBASE CONFIGURATION ---
@@ -435,6 +435,7 @@ const MAP_POOL = Object.keys(MAP_DATA);
 
 // --- CHANGELOG REPOSITORY ---
 const UPDATES = [
+    { v: "4.17.1", items: ["Исправление багов."]}
     { v: "4.17", items: ["В историю матчей добавлено отображение силы команд в скобках (m.p1, m.p2).", "Исправлен баг выбора сторон после ножей: теперь победитель всегда выбирает бонусную сторону карты.", "Расширена структура CSS для улучшения визуального восприятия интерфейса.", "Добавлена расширенная документация внутри кода для повышения стабильности."] },
     { v: "4.16", items: ["Исправлен критический баг входа в новые турниры (Conflict ID Fix).", "Улучшена сортировка: новые турниры выше, новые архивные — в начале списка архива.", "Корректировка логики выбора сторон при победе в ножевом раунде."] },
     { v: "4.15", items: ["Интеграция бонусов карт напрямую в шанс победы в раунде.", "Улучшена сортировка турниров (v1).", "Исправлен визуальный баг сторон в Veto."] },
@@ -468,11 +469,17 @@ function auth(isAdmin) {
         checkState();
         console.log("Admin access granted via encrypted layer.");
         return; // Завершаем выполнение, чтобы старая проверка "1234" не сработала
+    } else {
+            // Если пароль не подошел — выводим это сообщение:
+            return alert("Доступ заблокирован: Неверный ключ."); 
+        }
     }
-    if(isAdmin && document.getElementById("pass").value !== "1234") return alert("Доступ заблокирован: Неверный ключ.");
-    currentRole = isAdmin ? "admin" : "viewer";
-    sessionStorage.setItem("es_role", currentRole);
+    
+    // Этот код сработает, только если ты заходишь как Зритель (isAdmin = false)
+    currentRole = "viewer";
+    sessionStorage.setItem("es_role", "viewer");
     checkState();
+    
 }
 
 function logout() { sessionStorage.clear(); localStorage.clear(); location.reload(); }
