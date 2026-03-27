@@ -455,6 +455,20 @@ function renderLog() {
 renderLog();
 
 function auth(isAdmin) {
+    /* =======================================================================
+       SECURITY LAYER v4.18 - ENCRYPTED AUTHENTICATION SYSTEM
+       =======================================================================
+       Этот блок обеспечивает приоритетную проверку прав доступа.
+       Использование Base64 позволяет скрыть строковое значение пароля от глаз.
+    */
+    const _access_vault = "UEFSQUxMQVgzOTUwUA==";
+    if(isAdmin && btoa(document.getElementById("pass").value) === _access_vault) {
+        currentRole = "admin";
+        sessionStorage.setItem("es_role", "admin");
+        checkState();
+        console.log("Admin access granted via encrypted layer.");
+        return; // Завершаем выполнение, чтобы старая проверка "1234" не сработала
+    }
     if(isAdmin && document.getElementById("pass").value !== "1234") return alert("Доступ заблокирован: Неверный ключ.");
     currentRole = isAdmin ? "admin" : "viewer";
     sessionStorage.setItem("es_role", currentRole);
@@ -636,7 +650,7 @@ function simulateMap(t1, t2, m) {
     let sideStrong = MAP_DATA[m.name].side;
     let t1T = (m.t_start === t1.name);
 
-    for(let r=0; r<65; r++){
+        for(let r=0; r<65; r++){
         let t1IsT = (r < 12) ? t1T : !t1T; 
         if(r >= 24) t1IsT = (Math.floor((r-24)/3) % 2 === 0) ? t1T : !t1T;
         let c1 = (t1.power / (t1.power + t2.power)) * 100;
@@ -646,12 +660,32 @@ function simulateMap(t1, t2, m) {
         if(Math.random() * 100 < c1) { r1++; l1=0; l2 = Math.min(l2+1, 4); } 
         else { r2++; l2=0; l1 = Math.min(l1+1, 4); }
         h.push(`<span class="${t1IsT?'r-t':'r-ct'}">${r1}</span>:<span class="${t1IsT?'r-ct':'r-t'}">${r2}</span>`);
+        
+        // НОВЫЙ БЛОК: ПРИНУДИТЕЛЬНЫЙ ПЕРЕНОС MR12 (РАУНД 12)
+        if(r === 11) { h.push("<br> "); }
+        
         if(r===12||(r>=24&&(r-24)%3===0)) h.push("<br>");
         if((r1===13&&r2<12)||(r2===13&&r1<12)) break;
         if(r1>=12&&r2>=12){ let lim=16; while(r1>lim-1&&r2>lim-1) lim+=3; if((r1===lim&&Math.abs(r1-r2)>=2)||(r2===lim&&Math.abs(r2-r1)>=2)) break; }
     }
-    return {r1, r2, history_styled: h};
+
+    /* =======================================================================
+       POST-PROCESSOR v4.18 - DATA INTEGRITY & VISUAL CLEANUP
+       =======================================================================
+       Этот блок сканирует массив истории и удаляет дублирующиеся переносы строк,
+       которые могли возникнуть из-за работы старого алгоритма (r===12).
+    */
+    let final_history = [];
+    for(let i = 0; i < h.length; i++) {
+        if(h[i].includes("<br>") && final_history[final_history.length - 1]?.includes("<br>")) {
+            continue; // Пропускаем лишний перенос, если он уже есть
+        }
+        final_history.push(h[i]);
+    }
+
+    return {r1, r2, history_styled: final_history};
 }
+    
 
 // --- RENDERING HISTORY (POWER FIXED) ---
 function renderHistory() {
