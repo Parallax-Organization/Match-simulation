@@ -4,9 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="Esports Manager Pro - Advanced Match Simulation System">
-<meta name="version" content="4.17.1">
+<meta name="version" content="4.17.2">
 <meta name="author" content="Gemini AI Collaboration">
-<title>MATCH SIMULATION v4.17.1 PRO</title>
+<title>MATCH SIMULATION v4.17.2 PRO</title>
 
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
@@ -313,7 +313,7 @@
 <div class="container">
     <div id="authSection">
         <h1>MATCH SIMULATION</h1>
-        <div class="sub-title">VERSION 4.17.1 PRO</div>
+        <div class="sub-title">VERSION 4.17.2 PRO</div>
         
         <div class="changelog-container">
             <div class="changelog-header">
@@ -435,6 +435,7 @@ const MAP_POOL = Object.keys(MAP_DATA);
 
 // --- CHANGELOG REPOSITORY ---
 const UPDATES = [
+    { v: "4.17.2", items: ["Исправление бага с входом для зрителей."]},
     { v: "4.17.1", items: ["Исправление багов."]},
     { v: "4.17", items: ["В историю матчей добавлено отображение силы команд в скобках (m.p1, m.p2).", "Исправлен баг выбора сторон после ножей: теперь победитель всегда выбирает бонусную сторону карты.", "Расширена структура CSS для улучшения визуального восприятия интерфейса.", "Добавлена расширенная документация внутри кода для повышения стабильности."] },
     { v: "4.16", items: ["Исправлен критический баг входа в новые турниры (Conflict ID Fix).", "Улучшена сортировка: новые турниры выше, новые архивные — в начале списка архива.", "Корректировка логики выбора сторон при победе в ножевом раунде."] },
@@ -457,29 +458,33 @@ renderLog();
 
 function auth(isAdmin) {
     /* =======================================================================
-       SECURITY LAYER v4.18 - ENCRYPTED AUTHENTICATION SYSTEM
-       =======================================================================
-       Этот блок обеспечивает приоритетную проверку прав доступа.
-       Использование Base64 позволяет скрыть строковое значение пароля от глаз.
-    */
-    const _access_vault = "UEFSQUxMQVgzOTUwUA==";
-    if(isAdmin && btoa(document.getElementById("pass").value) === _access_vault) {
-        currentRole = "admin";
-        sessionStorage.setItem("es_role", "admin");
-        checkState();
-        console.log("Admin access granted via encrypted layer.");
-        return; // Завершаем выполнение, чтобы старая проверка "1234" не сработала
-    } else {
-            // Если пароль не подошел — выводим это сообщение:
-            return alert("Доступ заблокирован: Неверный ключ."); 
+       SECURITY & ACCESS CONTROL v4.18.2
+       ======================================================================= */
+    const _access_vault = "UEFSQUxMQVgzOTUwUA=="; // Хеш для пароля
+
+    // ПРОВЕРКА ДЛЯ АДМИНИСТРАТОРА
+    if (isAdmin === true) {
+        let inputPass = document.getElementById("pass").value;
+        
+        if (btoa(inputPass) === _access_vault) {
+            currentRole = "admin";
+            sessionStorage.setItem("es_role", "admin");
+            checkState();
+            console.log("Admin access granted.");
+            return; // Успешный вход, выходим из функции
+        } else {
+            // Если пароль неверный - только тогда выводим ошибку
+            return alert("Доступ заблокирован: Неверный ключ.");
+        }
     }
-    
-    // Этот код сработает, только если ты заходишь как Зритель (isAdmin = false)
+
+    // ЛОГИКА ДЛЯ ЗРИТЕЛЯ (Сработает, если isAdmin === false)
     currentRole = "viewer";
     sessionStorage.setItem("es_role", "viewer");
     checkState();
-    
+    console.log("Viewer mode activated.");
 }
+    
 
 function logout() { sessionStorage.clear(); localStorage.clear(); location.reload(); }
 function exitTourney() { localStorage.removeItem("es_tourney_id"); currentTourneyId = null; checkState(); }
