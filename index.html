@@ -4,15 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="Esports Manager Pro - Advanced Match Simulation System">
-<meta name="version" content="5.0.0">
+<meta name="version" content="5.1.0">
 <meta name="author" content="Gemini AI Collaboration">
-<title>MATCH SIMULATION v5.0.0 ULTRA</title>
+<title>MATCH SIMULATION v5.1.0 PRO</title>
 
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 
 <style>
-    /* GLOBAL THEME DEFINITIONS - KEEPING 4.17.3 STYLE */
+    /* GLOBAL THEME DEFINITIONS - EXACTLY AS 4.17.3 */
     :root { 
         --bg: #0f111a; 
         --card: #161925; 
@@ -73,7 +73,7 @@
         opacity: 0.7;
     }
 
-    /* ULTRA 5.0 NEW UI COMPONENTS */
+    /* ULTRA 5.0+ NEW UI COMPONENTS FOR PLAYERS AND PHASES */
     .player-editor-box {
         background: rgba(0,0,0,0.3);
         border: 1px solid #2d334a;
@@ -102,12 +102,13 @@
     .eco-tag { background: var(--danger); color: white; }
     .force-tag { background: var(--info); color: white; }
     .full-tag { background: var(--accent); color: black; }
+    .pistol-tag { background: #9b59b6; color: white; } /* Добавлено для пистолеток */
 
     .phase-badge {
         font-size: 10px;
-        opacity: 0.6;
+        opacity: 0.7;
         margin-left: 10px;
-        font-style: italic;
+        color: #a0a0a0;
     }
 
     /* CHANGELOG MODULE STYLING */
@@ -351,7 +352,7 @@
 <div class="container">
     <div id="authSection">
         <h1>MATCH SIMULATION</h1>
-        <div class="sub-title">VERSION 5.0.0 ULTRA</div>
+        <div class="sub-title">VERSION 5.1.0 PRO</div>
         
         <div class="changelog-container">
             <div class="changelog-header">
@@ -404,7 +405,8 @@
                 <h3><span style="color:var(--info)">01.</span> Ростер команд и игроков</h3>
                 <div style="display:grid; grid-template-columns: 1fr 1fr auto; gap: 10px; align-items: center;">
                     <input type="text" id="tName" placeholder="Имя команды">
-                    <input type="hidden" id="tPower" value="0"> <button onclick="addTeam()" style="height: 50px;">Добавить команду</button>
+                    <input type="hidden" id="tPower" value="0">
+                    <button onclick="addTeam()" style="height: 50px;">Добавить команду</button>
                 </div>
                 <div id="teamsDisplay" style="margin-top:20px;"></div>
                 
@@ -460,7 +462,7 @@
 
 <script>
 /* ========================================================================
-   ULTRA ENGINE JAVASCRIPT - v5.0.0
+   ULTRA ENGINE JAVASCRIPT - v5.1.0 PRO
    ======================================================================== */
 
 const firebaseConfig = {
@@ -486,17 +488,24 @@ const MAP_DATA = {
 };
 const MAP_POOL = Object.keys(MAP_DATA);
 
+// FULL CHANGELOG RESTORED + NEW UPDATES
 const UPDATES = [
+    { v: "5.1.0", items: ["Исправлена экономика: корректное списание средств при закупах, точные выплаты CS2 за лузстрики, адекватные пороги Eco/Force/Full.", "Возвращено полное отображение Veto, сторон, бонусов и формата в истории (как в 4.17.3).", "Улучшена визуализация Entry-киллов (теперь понятно, кто сделал минус).", "Восстановлена полная история обновлений и логлист."] },
     { v: "5.0.0", items: ["ULTRA Update: Добавлена система экономики CS2 (Money, Eco, Force, Full).", "Ростеры игроков: теперь в команде 5 игроков с уникальными ролями.", "Система фаз: раунд делится на Entry, Mid-round и Clutch.", "Пошаговая симуляция: кнопка симуляции по 1 раунду.", "Сила команды теперь автоматически считается от суммы сил игроков."] },
     { v: "4.17.3", items: ["Исправлен визуальный баг с двойным переносом строк (MR12).", "Оптимизирована сетка овертаймов: теперь перенос происходит строго каждые 3 раунда."] },
     { v: "4.17.2", items: ["Исправление бага с входом для зрителей."]},
-    { v: "4.17", items: ["В историю матчей добавлено отображение силы команд.", "Исправлен баг выбора сторон после ножей."] }
+    { v: "4.17.1", items: ["Исправление багов."]},
+    { v: "4.17", items: ["В историю матчей добавлено отображение силы команд в скобках (m.p1, m.p2).", "Исправлен баг выбора сторон после ножей: теперь победитель всегда выбирает бонусную сторону карты.", "Расширена структура CSS для улучшения визуального восприятия интерфейса.", "Добавлена расширенная документация внутри кода для повышения стабильности."] },
+    { v: "4.16", items: ["Исправлен критический баг входа в новые турниры (Conflict ID Fix).", "Улучшена сортировка: новые турниры выше, новые архивные — в начале списка архива.", "Корректировка логики выбора сторон при победе в ножевом раунде."] },
+    { v: "4.15", items: ["Интеграция бонусов карт напрямую в шанс победы в раунде.", "Улучшена сортировка турниров (v1).", "Исправлен визуальный баг сторон в Veto."] },
+    { v: "4.14", items: ["Исправлен Veto Log для всех форматов.", "В Bo1 возвращена информация о случайном выборе сторон.", "Корректные пики сторон в Bo5."] },
+    { v: "4.9-4.13", items: ["Уникальные команды для турниров.", "Система MR12 и овертаймы.", "Анти-322 система.", "Double Elimination (архив)."] }
 ];
 
 let currentLogIdx = 0, teams = [], tournaments = [], matches = [], activeMatch = null;
 let currentRole = sessionStorage.getItem("es_role"), currentTourneyId = localStorage.getItem("es_tourney_id");
-let editingTeamIdx = null; // Для менеджера игроков
-let currentLiveMapState = null; // Для пошаговой симуляции
+let editingTeamIdx = null; 
+let currentLiveMapState = null; 
 
 // --- NAVIGATION & AUTH ---
 function changeLog(dir) { currentLogIdx = (currentLogIdx + dir + UPDATES.length) % UPDATES.length; renderLog(); }
@@ -643,26 +652,103 @@ function removePlayer(idx) {
 }
 
 function calculateTeamPower(team) {
-    if(!team.players || team.players.length === 0) return 0;
+    if(!team.players || team.players.length === 0) return team.power || 0; // Fallback to old power
     return team.players.reduce((sum, p) => sum + p.power, 0);
 }
 
-// --- ULTRA 5.0 CORE SIMULATION ENGINE ---
-function conductUltraRound(t1, t2, mObj, state) {
-    // 1. ИНИЦИАЛИЗАЦИЯ СТОРОН
-    let t1IsT = (state.r < 12) ? state.t1T : !state.t1T; 
-    if(state.r >= 24) t1IsT = (Math.floor((state.r-24)/3) % 2 === 0) ? state.t1T : !state.t1T;
+// --- FULLY RESTORED VETO ENGINE (AS IN 4.17.3) ---
+function startVeto() {
+    let i1 = document.getElementById("sel1").value, i2 = document.getElementById("sel2").value, bo = parseInt(document.getElementById("bo").value), stage = document.getElementById("matchStageName").value.trim();
+    if(i1===i2) return alert("Ошибка: Команды должны быть разными.");
     
-    // 2. ЭКОНОМИКА (CS2 Style)
-    // Типы закупов на основе бюджета
-    const getBuyType = (money) => {
-        if(money >= 3900) return { type: "FULL", mult: 1.0 };
-        if(money >= 2100) return { type: "FORCE", mult: 0.75 };
-        return { type: "ECO", mult: 0.45 };
+    let t1 = teams[i1], t2 = teams[i2], pool = [...MAP_POOL], log = [], maps = [];
+    const getS = (m, chooser, other) => (MAP_DATA[m].side === "CT" ? {t:other.name, ct:chooser.name} : {t:chooser.name, ct:other.name});
+
+    if(bo == 1) {
+        for(let i=0; i<6; i++) log.push(`${(i%2==0?t1.name:t2.name)} забанил ${pool.splice(Math.floor(Math.random()*pool.length), 1)[0]}`);
+        let rSide = Math.random()>0.5; 
+        maps.push({name:pool[0], t_start: rSide?t1.name:t2.name, ct_start: rSide?t2.name:t1.name});
+        log.push(`Карта матча: ${pool[0]}. ${rSide ? t1.name : t2.name} начинает за атаку (T).`);
+    } else if(bo == 3) {
+        log.push(`${t1.name} забанил ${pool.splice(Math.floor(Math.random()*pool.length), 1)[0]}`);
+        log.push(`${t2.name} забанил ${pool.splice(Math.floor(Math.random()*pool.length), 1)[0]}`);
+        let p1 = pool.splice(Math.floor(Math.random()*pool.length), 1)[0];
+        let s1 = getS(p1, t2, t1); maps.push({name:p1, t_start: s1.t, ct_start: s1.ct});
+        log.push(`[Pick 1] ${t1.name} выбрал ${p1}. ${t2.name} выбрал ${s1.ct === t2.name ? 'CT' : 'T'} сторону.`);
+        let p2 = pool.splice(Math.floor(Math.random()*pool.length), 1)[0];
+        let s2 = getS(p2, t1, t2); maps.push({name:p2, t_start: s2.t, ct_start: s2.ct});
+        log.push(`[Pick 2] ${t2.name} выбрал ${p2}. ${t1.name} выбрал ${s2.ct === t1.name ? 'CT' : 'T'} сторону.`);
+        log.push(`${t1.name} забанил ${pool.splice(Math.floor(Math.random()*pool.length), 1)[0]}`);
+        log.push(`${t2.name} забанил ${pool.splice(Math.floor(Math.random()*pool.length), 1)[0]}`);
+        
+        let dec = pool[0]; 
+        let kwId = Math.random()>0.5; 
+        let kw = kwId?t1.name:t2.name; 
+        
+        let strongSide = MAP_DATA[dec].side;
+        let side = (strongSide === "CT") ? (kw === t2.name) : (kw === t1.name);
+        maps.push({name:dec, t_start: side?t1.name:t2.name, ct_start: side?t2.name:t1.name});
+        log.push(`[Decider] ${dec}. Ножи: ${kw}. Победитель забрал ${strongSide} сторону.`);
+    } else {
+        log.push(`${t1.name} забанил ${pool.splice(Math.floor(Math.random()*pool.length), 1)[0]}`);
+        log.push(`${t2.name} забанил ${pool.splice(Math.floor(Math.random()*pool.length), 1)[0]}`);
+        for(let k=1; k<=4; k++){
+            let p = pool.splice(Math.floor(Math.random()*pool.length), 1)[0];
+            let chooser = (k==1||k==3)?t1:t2; let other = (k==1||k==3)?t2:t1;
+            let s = getS(p, other, chooser); maps.push({name:p, t_start: s.t, ct_start: s.ct});
+            log.push(`[Pick ${k}] ${chooser.name} выбрал ${p}. ${other.name} за ${s.ct===other.name?'CT':'T'}`);
+        }
+        let dec = pool[0]; 
+        let kw = Math.random()>0.5?t1.name:t2.name; 
+        let strongSide = MAP_DATA[dec].side;
+        let side = (strongSide === "CT") ? (kw === t2.name) : (kw === t1.name);
+        maps.push({name:dec, t_start: side?t1.name:t2.name, ct_start: side?t2.name:t1.name});
+        log.push(`[Decider] ${dec}. Ножи: ${kw}. Победитель забрал ${strongSide} сторону.`);
+    }
+
+    activeMatch = { t1, t2, maps, bo, results: [], currentMapIdx: 0, wins1: 0, wins2: 0, veto: log, id: Date.now(), stage };
+    db.ref(`matches/${currentTourneyId}/${activeMatch.id}`).set({ id: activeMatch.id, t1: t1.name, p1: calculateTeamPower(t1), t2: t2.name, p2: calculateTeamPower(t2), total: "0:0", bo, details: [], veto: log, stage });
+    document.getElementById("currentSeriesDisplay").style.display = "block";
+    renderActiveMatch();
+}
+
+// --- ULTRA 5.1 CORE SIMULATION ENGINE (FIXED ECONOMY & PHASES) ---
+function conductUltraRound(t1, t2, mObj, state) {
+    // 1. ИНИЦИАЛИЗАЦИЯ СТОРОН И ОВЕРТАЙМОВ
+    let t1IsT = (state.r < 12) ? state.t1T : !state.t1T; 
+    let isOT = false;
+    if(state.r >= 24) {
+        t1IsT = (Math.floor((state.r-24)/3) % 2 === 0) ? state.t1T : !state.t1T;
+        isOT = true;
+    }
+
+    // Пистолетные раунды (0 и 12)
+    let isPistol = (state.r === 0 || state.r === 12);
+    
+    // В овертайме всегда фиксировано 10000$, никто не эконит
+    if(isOT && (state.r - 24) % 3 === 0) {
+        state.m1 = 10000;
+        state.m2 = 10000;
+    }
+
+    // 2. ЭКОНОМИКА (CS2 Style) - FIXED: DEDUCTING MONEY
+    const calculateBuy = (money, isPistol, isOT) => {
+        if(isOT) return { type: "FULL", cost: 4200, mult: 1.0 };
+        if(isPistol) return { type: "PISTOL", cost: 800, mult: 0.5 };
+        
+        if(money >= 4100) return { type: "FULL", cost: 4100, mult: 1.0 };
+        // Форсбай, если денег мало, но нужно рискнуть (например, после проигрыша пистолетки или в конце половины)
+        if(money >= 2000 && money < 4100) return { type: "FORCE", cost: 2000, mult: 0.75 };
+        
+        return { type: "ECO", cost: 0, mult: 0.45 }; // Полное эко для накопления
     };
 
-    let buy1 = getBuyType(state.m1);
-    let buy2 = getBuyType(state.m2);
+    let buy1 = calculateBuy(state.m1, isPistol, isOT);
+    let buy2 = calculateBuy(state.m2, isPistol, isOT);
+
+    // Списание денег за оружие (КРИТИЧЕСКИЙ ФИКС)
+    state.m1 -= buy1.cost;
+    state.m2 -= buy2.cost;
 
     // 3. БАЗОВЫЕ ШАНСЫ
     let p1 = calculateTeamPower(t1);
@@ -675,98 +761,70 @@ function conductUltraRound(t1, t2, mObj, state) {
     if (sideStrong === "CT") { if (!t1IsT) baseChance += b; else baseChance -= b; } 
     else { if (t1IsT) baseChance += b; else baseChance -= b; }
 
-    // Влияние экономики
+    // Влияние экономики на шанс
     let finalChance = baseChance;
     if(buy1.type === "FULL" && buy2.type === "ECO") finalChance += 35;
     if(buy1.type === "ECO" && buy2.type === "FULL") finalChance -= 35;
     if(buy1.type === "FORCE" && buy2.type === "FULL") finalChance -= 15;
+    if(buy1.type === "FULL" && buy2.type === "FORCE") finalChance += 15;
 
-    // 4. ТРИ СТАДИИ РАУНДА (Micro-events)
-    let phaseLog = "";
+    // 4. ТРИ СТАДИИ РАУНДА
+    let t1EntryPower = (t1.players || []).filter(p => p.role === "Sniper" || p.role === "Rifler").reduce((s,p)=>s+p.power, 0) || (p1 * 0.4);
+    let t2EntryPower = (t2.players || []).filter(p => p.role === "Sniper" || p.role === "Rifler").reduce((s,p)=>s+p.power, 0) || (p2 * 0.4);
     
-    // Phase 1: Entry
-    // Снайперы и Рифлеры влияют на первый контакт
-    let t1Entry = (t1.players || []).filter(p => p.role === "Sniper" || p.role === "Rifler").reduce((s,p)=>s+p.power, 0);
-    let t2Entry = (t2.players || []).filter(p => p.role === "Sniper" || p.role === "Rifler").reduce((s,p)=>s+p.power, 0);
-    let entryDuel = (Math.random() * (t1Entry + t2Entry)) < t1Entry;
+    let entryDuel = (Math.random() * (t1EntryPower + t2EntryPower)) < t1EntryPower;
+    let entryWinner = entryDuel ? t1.name : t2.name;
     
-    if(entryDuel) { 
-        finalChance += 12; 
-        phaseLog = "Entry OK"; 
-    } else { 
-        finalChance -= 12; 
-        phaseLog = "Entry LOST"; 
-    }
+    if(entryDuel) { finalChance += 12; } else { finalChance -= 12; }
 
-    // Phase 2: Mid-round
-    // Капитаны дают бонус к координации
     let cap1 = (t1.players || []).find(p => p.role === "Captain")?.power || 0;
     let cap2 = (t2.players || []).find(p => p.role === "Captain")?.power || 0;
     finalChance += (cap1 * 0.05) - (cap2 * 0.05);
 
-    // Phase 3: Result
     let win1 = (Math.random() * 100) < finalChance;
     
-    // 5. НАЧИСЛЕНИЕ ДЕНЕГ
+    // 5. НАЧИСЛЕНИЕ ДЕНЕГ (Точный расчет CS2)
     const winMoney = 3250;
-    const lossBase = 1400;
+    // Loss bonus: 1400, 1900, 2400, 2900, 3400
+    const getLossMoney = (streak) => 1400 + (Math.min(streak, 4) * 500);
     
     if(win1) {
-        state.r1++; state.l1 = 0; state.l2 = Math.min(state.l2 + 1, 4);
+        state.r1++; state.l1 = 0; state.l2++;
         state.m1 += winMoney;
-        state.m2 += lossBase + (state.l2 * 500);
+        state.m2 += getLossMoney(state.l2 - 1);
     } else {
-        state.r2++; state.l2 = 0; state.l1 = Math.min(state.l1 + 1, 4);
+        state.r2++; state.l2 = 0; state.l1++;
         state.m2 += winMoney;
-        state.m1 += lossBase + (state.l1 * 500);
+        state.m1 += getLossMoney(state.l1 - 1);
     }
 
-    // Ограничение денег
     state.m1 = Math.min(state.m1, 16000);
     state.m2 = Math.min(state.m2, 16000);
 
-    // Запись в историю
+    // 6. ЗАПИСЬ ИСТОРИИ
     let ecoLabel1 = `<span class="economy-label ${buy1.type.toLowerCase()}-tag">${buy1.type}</span>`;
     let ecoLabel2 = `<span class="economy-label ${buy2.type.toLowerCase()}-tag">${buy2.type}</span>`;
-    state.h.push(`<span class="${t1IsT?'r-t':'r-ct'}">${state.r1}</span>:<span class="${t1IsT?'r-ct':'r-t'}">${state.r2}</span> ${ecoLabel1}${ecoLabel2} <span class="phase-badge">${phaseLog}</span>`);
+    let phaseLog = `<span class="phase-badge">[Entry: ${entryWinner}]</span>`;
     
+    state.h.push(`<span class="${t1IsT?'r-t':'r-ct'}">${state.r1}</span>:<span class="${t1IsT?'r-ct':'r-t'}">${state.r2}</span> ${ecoLabel1}${ecoLabel2} ${phaseLog}`);
+    
+    // Смена сторон (Сброс экономики)
     if (state.r === 11 || (state.r >= 23 && (state.r - 23) % 3 === 0)) {
         state.h.push("<br>");
-        // Сброс денег при смене сторон
-        state.m1 = 800; state.m2 = 800; state.l1 = 0; state.l2 = 0;
+        if(state.r === 11) { // Сброс только на халфтайме, в овертаймах управляется отдельной логикой выше
+            state.m1 = 800; state.m2 = 800; state.l1 = 0; state.l2 = 0;
+        }
     }
     
     state.r++;
     return state;
 }
 
-// --- VETO & UI ---
-function startVeto() {
-    let i1 = document.getElementById("sel1").value, i2 = document.getElementById("sel2").value, bo = parseInt(document.getElementById("bo").value), stage = document.getElementById("matchStageName").value.trim();
-    if(i1===i2) return alert("Команды одинаковые.");
-    
-    let t1 = teams[i1], t2 = teams[i2], pool = [...MAP_POOL], log = [], maps = [];
-    // (Стандартная логика Veto из 4.17.3...)
-    if(bo == 1) {
-        for(let i=0; i<6; i++) log.push(`${(i%2==0?t1.name:t2.name)} забанил ${pool.splice(Math.floor(Math.random()*pool.length), 1)[0]}`);
-        let rSide = Math.random()>0.5; maps.push({name:pool[0], t_start: rSide?t1.name:t2.name, ct_start: rSide?t2.name:t1.name});
-    } else {
-        log.push(`${t1.name} бан ${pool.splice(Math.floor(Math.random()*pool.length), 1)[0]}`);
-        log.push(`${t2.name} бан ${pool.splice(Math.floor(Math.random()*pool.length), 1)[0]}`);
-        maps.push({name: pool.splice(0,1)[0], t_start: t1.name, ct_start: t2.name});
-        maps.push({name: pool.splice(0,1)[0], t_start: t2.name, ct_start: t1.name});
-        maps.push({name: pool[0], t_start: t1.name, ct_start: t2.name});
-    }
-
-    activeMatch = { t1, t2, maps, bo, results: [], currentMapIdx: 0, wins1: 0, wins2: 0, veto: log, id: Date.now(), stage };
-    db.ref(`matches/${currentTourneyId}/${activeMatch.id}`).set({ id: activeMatch.id, t1: t1.name, p1: calculateTeamPower(t1), t2: t2.name, p2: calculateTeamPower(t2), total: "0:0", bo, details: [], veto: log, stage });
-    document.getElementById("currentSeriesDisplay").style.display = "block";
-    renderActiveMatch();
-}
-
+// --- RENDERING & PROGRESSION ---
 function renderActiveMatch() {
     const am = activeMatch; if(!am) return;
     document.getElementById("seriesTitle").innerText = `${am.t1.name} [${am.wins1}:${am.wins2}] ${am.t2.name}`;
+    document.getElementById("vetoLogLive").innerHTML = "<b>Лог предматчевой подготовки:</b><br>" + am.veto.join("<br>");
     let cur = am.maps[am.currentMapIdx];
     document.getElementById("mapControls").innerHTML = `
         <p>Текущая карта: <b style="color:var(--accent)">${cur.name}</b></p>
@@ -783,10 +841,8 @@ function playOneRoundStep() {
 
     currentLiveMapState = conductUltraRound(am.t1, am.t2, mObj, currentLiveMapState);
     
-    // Обновляем визуализацию
     document.getElementById("seriesTitle").innerText = `${am.t1.name} [${am.wins1}:${am.wins2}] ${am.t2.name} | Текущий счет: ${currentLiveMapState.r1}:${currentLiveMapState.r2}`;
 
-    // Проверка конца карты
     let s = currentLiveMapState;
     let isEnd = false;
     if((s.r1===13 && s.r2<12) || (s.r2===13 && s.r1<12)) isEnd = true;
@@ -795,10 +851,7 @@ function playOneRoundStep() {
         if((s.r1===lim && Math.abs(s.r1-s.r2)>=2) || (s.r2===lim && Math.abs(s.r2-s.r1)>=2)) isEnd = true; 
     }
 
-    if(isEnd) {
-        saveMapResult(s);
-        currentLiveMapState = null;
-    }
+    if(isEnd) { saveMapResult(s); currentLiveMapState = null; }
 }
 
 function playNextMapFull() {
@@ -813,6 +866,15 @@ function playNextMapFull() {
             if((s.r1===lim && Math.abs(s.r1-s.r2)>=2) || (s.r2===lim && Math.abs(s.r2-s.r1)>=2)) break; 
         }
     }
+    
+    // Очистка пустых переносов строк (из версии 4.18)
+    let final_history = [];
+    for(let i = 0; i < s.h.length; i++) {
+        if(s.h[i].includes("<br>") && final_history[final_history.length - 1]?.includes("<br>")) continue;
+        final_history.push(s.h[i]);
+    }
+    s.h = final_history;
+    
     saveMapResult(s);
 }
 
@@ -826,22 +888,31 @@ function saveMapResult(s) {
     else renderActiveMatch();
 }
 
+// FULLY RESTORED HISTORY RENDERING (AS IN 4.17.3)
 function renderHistory() {
     document.getElementById("matchHistory").innerHTML = matches.map(m => `
         <div class="match-card">
-            <div class="match-stage">${m.stage || 'Match'}</div>
+            ${m.stage ? `<div class="match-stage">${m.stage}</div>` : ''}
             <div style="display:flex; justify-content:space-between; align-items:center;">
-                <span><b>${m.t1}</b> vs <b>${m.t2}</b></span>
-                <b style="color:var(--accent); font-size:1.8em;">${m.total}</b>
+                <span style="font-size:1.15em;"><b>${m.t1}</b> (${m.p1}) vs <b>${m.t2}</b> (${m.p2}) <small style="opacity:0.5">Bo${m.bo}</small></span>
+                <b style="color:var(--accent); font-size:1.8em; font-family: 'JetBrains Mono';">${m.total}</b>
             </div>
             ${(m.details || []).map(d => `
                 <div class="map-row">
-                    <div style="display:flex; justify-content:space-between; border-bottom: 1px solid #333; padding-bottom:5px; margin-bottom:10px;">
-                        <b style="color:var(--info)">${d.name}</b> <b>${d.score}</b>
+                    <div style="display:flex; justify-content:space-between; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom:8px; margin-bottom:12px;">
+                        <b style="color:var(--info); letter-spacing:1px;">${d.name}</b> 
+                        <b style="color:var(--accent); font-size:1.2em;">${d.score}</b>
+                    </div>
+                    <div style="margin:10px 0; font-size:11px;">
+                        <span class="badge badge-t">Attack: ${d.t_start}</span>
+                        <span class="badge badge-ct">Defense: ${d.ct_start}</span>
+                        <span class="badge" style="background:#222; border: 1px solid #444; color:#fff;">Side: <span style="color:${d.sideBonus==='CT'?'var(--ct-color)':'var(--t-color)'}">${d.sideBonus}</span> (+${d.bonus}%)</span>
                     </div>
                     <div class="round-history">${d.rounds.join(" ")}</div>
                 </div>
             `).join("")}
+            <span class="toggle-veto" onclick="let b=this.nextElementSibling; b.style.display=b.style.display==='none'?'block':'none'">[ Просмотреть детализацию Veto ]</span>
+            <div class="veto-box" style="display:none">${m.veto.join("<br>")}</div>
         </div>`).join("");
 }
 
@@ -849,4 +920,3 @@ checkState();
 </script>
 </body>
 </html>
-
