@@ -4,9 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="Esports Manager Pro - Advanced Match Simulation System">
-<meta name="version" content="5.4.0">
+<meta name="version" content="5.4.1">
 <meta name="author" content="Gemini AI Collaboration">
-<title>MATCH SIMULATION v5.4.0 PRO</title>
+<title>MATCH SIMULATION v5.4.1 PRO</title>
 
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
@@ -95,7 +95,7 @@
 
     .player-row {
         display: grid;
-        grid-template-columns: 2fr 1.5fr 1fr; /* Изменено: убран pPower, добавлено пространство */
+        grid-template-columns: 2fr 1.5fr 1fr;
         gap: 10px;
         margin-bottom: 10px;
         align-items: center;
@@ -122,7 +122,7 @@
     }
 
     /* ========================================================================
-       VERSION 5.2.0 & 5.4.0 - CSS COMPONENTS FOR DETAILS AND STATS
+       VERSION 5.2.0 & 5.4.1 - CSS COMPONENTS FOR DETAILS AND STATS
        ======================================================================== */
     .round-detail-block {
         background: rgba(0,0,0,0.25);
@@ -539,7 +539,7 @@
 <div class="container">
     <div id="authSection">
         <h1>MATCH SIMULATION</h1>
-        <div class="sub-title">VERSION 5.4.0 PRO</div>
+        <div class="sub-title">VERSION 5.4.1 PRO</div>
         
         <div class="changelog-container">
             <div class="changelog-header">
@@ -649,7 +649,7 @@
 
 <script>
 /* ========================================================================
-   ULTRA ENGINE JAVASCRIPT - v5.4.0 PRO
+   ULTRA ENGINE JAVASCRIPT - v5.4.1 PRO
    ======================================================================== */
 
 // Firebase Initialization
@@ -676,9 +676,10 @@ const MAP_DATA = {
 };
 const MAP_POOL = Object.keys(MAP_DATA);
 
-// FULL CHANGELOG RESTORED + NEW UPDATES 5.4.0
+// FULL CHANGELOG RESTORED + NEW UPDATES 5.4.1
 // Соблюдение правила сохранения всей истории обновлений
 const UPDATES = [
+    { v: "5.4.1", items: ["Исправлен баг с уходом экономики в минус: теперь команда не может закупиться на сумму больше, чем у нее есть на балансе.", "Полностью переработана экономика овертаймов: теперь в начале каждых 3 раундов (полупериод) командам выдается стартовый капитал $10,000 на игрока ($50,000 на команду), который переносится между раундами реалистично.", "В детализации раунда (сводке перед раундом) шанс на победу теперь отображается для обеих команд.", "В кратком логе (Timeline) шансы больше не округляются до целых чисел, а показывают десятые доли процента (например, 51.2% vs 48.8%).", "Глобальное сохранение ростеров: при создании нового турнира, система автоматически перенесет в него все команды из вашего самого большого предыдущего турнира."] },
     { v: "5.4.0", items: ["Новая система расчета Match MVP (теперь учитываются Kills, Assists, Plants, Defuses, ADR и K/D для точности).", "Цветовая индикация игроков в логах раундов: Оранжевый для T, Голубой для CT (динамическая смена при смене сторон).", "Изменена система силы: теперь сила задается всей команде сразу при создании. Игроки больше не требуют ввода силы вручную.", "Детализация экономики: теперь в истории раунда отображается бюджет команд до закупа и после, а также доход за текущий раунд.", "Реалистичная экономика: скорректированы пороги ECO/Force (теперь чаще играют ECO), на допах команды всегда имеют максимум денег и играют FULL.", "Детализация расчёта шансов: в логе каждого раунда теперь выводится сводка того, из чего складывается шанс на победу (База + Сторона + Экономика)."] },
     { v: "5.3.0", items: ["Новая продвинутая статистика игроков (Kills, Assists, Deaths, K/D, ADR, HS%, Plants, Defuses).", "Игроки в статистике теперь сортируются от лучшего к худшему по количеству фрагов.", "Добавлен Match MVP (Самый ценный игрок по итогам всех карт матча).", "Обновлена логика выживаемости: теперь при взрыве бомбы (T) или обезвреживании (CT) часть проигравшей команды может спастись, а не умирать в полном составе.", "Экономика улучшена: пороги Eco скорректированы (<$8000), чтобы Eco раунды стали реалистичными и происходили чаще после сброса экономики.", "Отключено влияние Капитана на общие шансы команды по просьбе пользователя.", "Восстановлена функция полного удаления турниров (кнопка крестик) для администраторов.", "Архивированные турниры теперь корректно сортируются: самые последние завершенные ивенты выводятся первыми в архиве."] },
     { v: "5.2.0", items: ["Глобальное обновление симуляции раундов и статистики игроков.", "Полностью переработан интерфейс истории матча: теперь каждый раунд выводится с новой строки с возможностью развернуть и посмотреть детальные события (кто кого убил, установка бомбы, дефьюз).", "Интегрирована система оружия: игроки закупают AWP, AK-47, M4A4 и др. в зависимости от своей роли и экономики.", "Добавлена таблица послематчевой статистики игроков (K/D, Plants, Defuses).", "Экономика масштабирована до реалистичных командных значений CS2 (с учетом бонусов за киллы и бомбу).", "Шансы на победу теперь отображаются перед каждым раундом в деталях."] },
@@ -767,7 +768,7 @@ function checkState() {
     }
 }
 
-// --- TOURNAMENT MANAGEMENT (UPDATED 5.3.0/5.4.0) ---
+// --- TOURNAMENT MANAGEMENT (UPDATED 5.3.0/5.4.1) ---
 function loadTournaments() {
     db.ref("tournaments").on("value", s => {
         const val = s.val() || {};
@@ -797,7 +798,22 @@ function loadTournaments() {
 function createTourney() { 
     const n = document.getElementById("newTourneyName").value.trim(); 
     if(n) {
-        db.ref("tournaments").push({ name: n, status: "active", id: Date.now() }); 
+        let newRef = db.ref("tournaments").push({ name: n, status: "active", id: Date.now() }); 
+        let newTourneyId = newRef.key;
+        
+        // Автоматическое копирование ростера команд из самого заполненного турнира
+        db.ref("teams").once("value", s => {
+            let allTeams = s.val() || {};
+            let bestTeams = [];
+            for(let k in allTeams) {
+                if(allTeams[k] && allTeams[k].length > bestTeams.length) {
+                    bestTeams = allTeams[k];
+                }
+            }
+            if(bestTeams.length > 0) {
+                db.ref("teams/" + newTourneyId).set(bestTeams);
+            }
+        });
     }
     document.getElementById("newTourneyName").value = "";
 }
@@ -820,7 +836,7 @@ function deleteTourney(id) {
     }
 }
 
-// --- TEAM & PLAYER ENGINE 5.4.0 ---
+// --- TEAM & PLAYER ENGINE 5.4.1 ---
 function loadTourneyData() {
     db.ref("tournaments/" + currentTourneyId).on("value", s => {
         const t = s.val(); 
@@ -870,7 +886,7 @@ function addTeam() {
     let p = document.getElementById("tPower");
     
     if(n.value && p.value) { 
-        // В 5.4.0 сила задается сразу при создании команды
+        // В 5.4.1 сила задается сразу при создании команды
         let teamPower = parseInt(p.value) || 50;
         teams.push({ 
             name: n.value, 
@@ -910,7 +926,7 @@ function renderPlayers() {
     const t = teams[editingTeamIdx];
     const list = document.getElementById("playerList");
     
-    // В 5.4.0 больше не показывается индивидуальная сила игрока
+    // В 5.4.1 больше не показывается индивидуальная сила игрока
     list.innerHTML = (t.players || []).map((p, i) => `
         <div class="player-row" style="background:rgba(255,255,255,0.05); padding:5px 15px; border-radius:8px;">
             <div style="font-weight:bold; font-size: 14px;">${p.nick}</div>
@@ -929,7 +945,7 @@ function savePlayer() {
     const role = document.getElementById("pRole").value;
     
     if(nick) {
-        // Сила игрока теперь игнорируется в 5.4.0, сохраняем только имя и роль
+        // Сила игрока теперь игнорируется в 5.4.1, сохраняем только имя и роль
         t.players.push({ nick, role });
         
         db.ref("teams/" + currentTourneyId).set(teams);
@@ -947,7 +963,7 @@ function removePlayer(idx) {
 }
 
 function calculateTeamPower(team) {
-    // В 5.4.0 возвращаем сохраненную силу команды напрямую, игнорируя силу игроков
+    // В 5.4.1 возвращаем сохраненную силу команды напрямую, игнорируя силу игроков
     // Старая логика (reduce) оставлена только как fallback для старых команд без team.power
     if (team.power !== undefined && team.power > 0) return team.power;
     if (!team.players || team.players.length === 0) return 0;
@@ -1052,7 +1068,7 @@ function startVeto() {
     renderActiveMatch();
 }
 
-// --- VERSION 5.4.0: ADVANCED CS2 ROUND SIMULATION ENGINE ---
+// --- VERSION 5.4.1: ADVANCED CS2 ROUND SIMULATION ENGINE ---
 // Вспомогательные функции для расчета киллов и оружия
 function getWeaponForRole(role, ecoType, isT) {
     if (ecoType === "PISTOL") return isT ? "Glock-18" : "USP-S";
@@ -1111,27 +1127,28 @@ function conductUltraRound(t1, t2, mObj, state) {
 
     let isPistol = (state.r === 0 || state.r === 12);
     
-    // В овертайме всегда выдаются максимальные деньги (задача 5.4.0)
-    // Команды всегда играют FULL на допах.
+    // В овертайме $10,000 на игрока выдается только раз в 3 раунда (задача 5.4.1)
     if(isOT) {
-        state.m1 = 80000;
-        state.m2 = 80000;
         if ((state.r - 24) % 3 === 0) {
+            state.m1 = 50000;
+            state.m2 = 50000;
             otResetMsg = true;
         }
     }
 
-    // 2. РАСЧЕТ ЭКОНОМИКИ (Реалистичные пороги 5.4.0)
+    // 2. РАСЧЕТ ЭКОНОМИКИ (Реалистичные пороги с учетом баланса 5.4.1)
     const calculateTeamBuy = (money, isPistol, isOT) => {
-        if(isOT) return { type: "FULL", cost: 23500, mult: 1.0 };
-        if(isPistol) return { type: "PISTOL", cost: 1500, mult: 0.5 };
+        if(isOT) {
+            let cost = Math.min(money, 23500);
+            return { type: cost >= 20000 ? "FULL" : "FORCE", cost: cost, mult: 1.0 };
+        }
+        if(isPistol) return { type: "PISTOL", cost: Math.min(money, 1500), mult: 0.5 };
         
-        // В 5.4.0 пороги изменены: ECO происходит чаще.
-        // Full buy стоит в среднем ~$4500 на человека = $22500 на команду.
-        // ECO до $12000 (то есть $2400 на человека).
-        if(money >= 20000) return { type: "FULL", cost: 23500, mult: 1.0 };
-        if(money >= 12000 && money < 20000) return { type: "FORCE", cost: Math.min(money, 10000), mult: 0.75 };
-        return { type: "ECO", cost: 0, mult: 0.45 };
+        // Исправлен баг минусовой экономики: теперь закупается не больше, чем есть денег.
+        if(money >= 23500) return { type: "FULL", cost: 23500, mult: 1.0 };
+        if(money >= 20000) return { type: "FULL", cost: money, mult: 1.0 };
+        if(money >= 12000) return { type: "FORCE", cost: money, mult: 0.75 };
+        return { type: "ECO", cost: Math.min(money, 2000), mult: 0.45 };
     };
 
     let m1_start = state.m1;
@@ -1147,7 +1164,7 @@ function conductUltraRound(t1, t2, mObj, state) {
     let m1_after = state.m1;
     let m2_after = state.m2;
 
-    // 3. РАСЧЕТ ВЕРОЯТНОСТЕЙ (С Детализацией для лога 5.4.0)
+    // 3. РАСЧЕТ ВЕРОЯТНОСТЕЙ (С Детализацией для лога 5.4.1)
     let p1 = calculateTeamPower(t1);
     let p2 = calculateTeamPower(t2);
     
@@ -1182,7 +1199,7 @@ function conductUltraRound(t1, t2, mObj, state) {
     
     let win1 = (Math.random() * 100) < finalChance;
 
-    // 4. СИМУЛЯЦИЯ СОБЫТИЙ РАУНДА (Цвета ников 5.4.0)
+    // 4. СИМУЛЯЦИЯ СОБЫТИЙ РАУНДА (Цвета ников)
     let roundEvents = [];
     let alive1 = [...(t1.players || [])];
     let alive2 = [...(t2.players || [])];
@@ -1211,7 +1228,7 @@ function conductUltraRound(t1, t2, mObj, state) {
     let roundEarnedM1 = 0;
     let roundEarnedM2 = 0;
 
-    // Цвета команд для 5.4.0 (Оранжевый для T, Голубой для CT)
+    // Цвета команд (Оранжевый для T, Голубой для CT)
     const tColor = "var(--t-color)";
     const ctColor = "var(--ct-color)";
     
@@ -1238,7 +1255,6 @@ function conductUltraRound(t1, t2, mObj, state) {
             let weapon = getWeaponForRole(killer.role, buy1.type, t1IsT);
             let hsEvent = Math.random() > 0.5 ? " 🎯" : ""; 
             
-            // Раскрашиваем ники (5.4.0)
             let kColor = t1IsT ? tColor : ctColor;
             let vColor = t2IsT ? tColor : ctColor;
             
@@ -1272,7 +1288,6 @@ function conductUltraRound(t1, t2, mObj, state) {
             let weapon = getWeaponForRole(killer.role, buy2.type, !t1IsT);
             let hsEvent = Math.random() > 0.5 ? " 🎯" : "";
             
-            // Раскрашиваем ники (5.4.0)
             let kColor = t2IsT ? tColor : ctColor;
             let vColor = t1IsT ? tColor : ctColor;
 
@@ -1298,11 +1313,11 @@ function conductUltraRound(t1, t2, mObj, state) {
         }
     }
 
-    // Логика бомбы (Цвета ников 5.4.0)
+    // Логика бомбы 
     if (isBombPlant) {
         let planterTeam = t1IsT ? t1 : t2;
         let planterTeamObj = t1IsT ? state.pStats.t1 : state.pStats.t2;
-        let planterColor = t1IsT ? (t1IsT ? tColor : ctColor) : (t2IsT ? tColor : ctColor); // Всегда T
+        let planterColor = t1IsT ? (t1IsT ? tColor : ctColor) : (t2IsT ? tColor : ctColor); 
         let planter = selectPlayerWeighted(planterTeam.players || []);
         
         roundEvents.splice(Math.floor(roundEvents.length/2), 0, `<div class="event-line event-bomb">🧨 <span style="color:${planterColor}">${planter.nick}</span> установил бомбу</div>`);
@@ -1313,7 +1328,7 @@ function conductUltraRound(t1, t2, mObj, state) {
         if (isDefuse) {
             let defuserTeam = t1IsT ? t2 : t1;
             let defuserTeamObj = t1IsT ? state.pStats.t2 : state.pStats.t1;
-            let defuserColor = t1IsT ? (t2IsT ? tColor : ctColor) : (t1IsT ? tColor : ctColor); // Всегда CT
+            let defuserColor = t1IsT ? (t2IsT ? tColor : ctColor) : (t1IsT ? tColor : ctColor); 
             let defuserAlive = t1IsT ? alive2 : alive1;
             let defuser = defuserAlive.length > 0 ? defuserAlive[0] : (defuserTeam.players||[])[0];
             
@@ -1356,33 +1371,33 @@ function conductUltraRound(t1, t2, mObj, state) {
     state.m1 = Math.min(state.m1, 80000); 
     state.m2 = Math.min(state.m2, 80000);
 
-    // Добавляем лог расчета шансов (Задача 5.4.0)
+    // Добавляем лог расчета шансов для обеих команд (Задача 5.4.1)
     let chanceLogHtml = `
     <div style="background: rgba(255,255,255,0.03); padding: 10px 15px; border-radius: 8px; margin-bottom: 12px; font-size: 11px; border-left: 3px solid #4a90e2;">
         <b style="color:var(--info)">РАСЧЕТ ШАНСОВ ПЕРЕД РАУНДОМ:</b><br>
         <span style="opacity:0.8">• База (Сила): ${t1.name} ${baseChance.toFixed(1)}% vs ${t2.name} ${(100-baseChance).toFixed(1)}%</span><br>
         <span style="opacity:0.8">• Бонус стороны (${mObj.name} - ${sideStrong}): ${sideChanceMod > 0 ? '+' : ''}${sideChanceMod.toFixed(1)}% для ${t1.name}</span><br>
         <span style="opacity:0.8">• Экономика (${buy1.type} vs ${buy2.type}): ${econChanceMod > 0 ? '+' : ''}${econChanceMod.toFixed(1)}% для ${t1.name}</span><br>
-        <b style="color:var(--accent); margin-top:5px; display:inline-block;">ИТОГОВЫЙ ШАНС ПОБЕДЫ ${t1.name.toUpperCase()}: ${finalChance.toFixed(1)}%</b>
+        <b style="color:var(--accent); margin-top:5px; display:inline-block;">ИТОГОВЫЙ ШАНС ПОБЕДЫ: ${t1.name.toUpperCase()} ${finalChance.toFixed(1)}% | ${t2.name.toUpperCase()} ${(100-finalChance).toFixed(1)}%</b>
     </div>`;
     
     roundEvents.unshift(chanceLogHtml);
 
-    // Добавляем лог заработка (Задача 5.4.0)
+    // Добавляем лог заработка
     let incomeLogHtml = `
     <div style="background: rgba(0,255,65,0.03); padding: 8px 15px; border-radius: 8px; margin-top: 12px; font-size: 11px; border-left: 3px solid #00ff41; color:#a0a0a0;">
         <b>Доход по итогам раунда:</b> ${t1.name} <span style="color:var(--accent)">+$${totalEarned1}</span> | ${t2.name} <span style="color:var(--accent)">+$${totalEarned2}</span>
     </div>`;
     roundEvents.push(incomeLogHtml);
 
-    // 6. СОХРАНЕНИЕ В ИСТОРИЮ (Расширенный UI с экономикой 5.4.0)
+    // 6. СОХРАНЕНИЕ В ИСТОРИЮ (Расширенный UI с точными шансами 5.4.1)
     let ecoLabel1 = `<span class="economy-label ${buy1.type.toLowerCase()}-tag">${buy1.type}</span>`;
     let ecoLabel2 = `<span class="economy-label ${buy2.type.toLowerCase()}-tag">${buy2.type}</span>`;
     
     let moneyInfo1 = `<span class="econ-summary">$${m1_start} ➝ $${m1_after}</span>`;
     let moneyInfo2 = `<span class="econ-summary">$${m2_start} ➝ $${m2_after}</span>`;
     
-    if(otResetMsg) roundEvents.unshift(`<div class="event-line" style="color:var(--accent); font-weight:bold; font-size:14px; text-align:center; padding: 10px 0;">[OVERTIME: СБРОС ДЕНЕГ ДО МАКСИМУМА ($16,000 НА ИГРОКА)]</div>`);
+    if(otResetMsg) roundEvents.unshift(`<div class="event-line" style="color:var(--accent); font-weight:bold; font-size:14px; text-align:center; padding: 10px 0;">[OVERTIME: СБРОС ДЕНЕГ ДО СТАРТОВЫХ ($10,000 НА ИГРОКА)]</div>`);
 
     let htmlBlock = `
     <details class="round-detail-block">
@@ -1390,7 +1405,7 @@ function conductUltraRound(t1, t2, mObj, state) {
             <div>
                 <span style="opacity:0.5; margin-right:10px;">R${state.r+1}</span>
                 <span class="${t1IsT?'r-t':'r-ct'}">${state.r1}</span> : <span class="${t1IsT?'r-ct':'r-t'}">${state.r2}</span>
-                <span style="margin-left: 15px; font-size:11px; opacity:0.8;">Win Chance: ${finalChance.toFixed(0)}% vs ${(100-finalChance).toFixed(0)}%</span>
+                <span style="margin-left: 15px; font-size:11px; opacity:0.8;">Win Chance: ${finalChance.toFixed(1)}% vs ${(100-finalChance).toFixed(1)}%</span>
             </div>
             <div>
                 ${ecoLabel1} ${moneyInfo1} <span style="margin: 0 10px; opacity: 0.5;">VS</span> ${moneyInfo2} ${ecoLabel2}
@@ -1523,7 +1538,7 @@ function saveMapResult(s) {
     }
 }
 
-// 5.4.0 ADVANCED STATS TABLE
+// 5.4.1 ADVANCED STATS TABLE
 function generateStatsTable(tName, statsObj) {
     if (!statsObj) return "";
     
@@ -1533,7 +1548,7 @@ function generateStatsTable(tName, statsObj) {
         let st = statsObj[nick];
         let hsPercent = st.k > 0 ? Math.round((st.hs / st.k) * 100) : 0;
         let kd = st.d > 0 ? (st.k / st.d).toFixed(2) : st.k.toFixed(2);
-        let adr = Math.round(st.dmg / 24); // Нормализация урона для ADR
+        let adr = Math.round(st.dmg / 24); 
         
         return `<tr>
             <td><b>${nick}</b></td>
@@ -1563,11 +1578,10 @@ function generateStatsTable(tName, statsObj) {
     `;
 }
 
-// FULLY RESTORED & UPGRADED HISTORY RENDERING (5.4.0)
+// FULLY RESTORED & UPGRADED HISTORY RENDERING
 function renderHistory() {
     document.getElementById("matchHistory").innerHTML = matches.map(m => {
         
-        // 5.4.0 Продвинутый расчет MATCH MVP
         let matchMvp = null;
         let maxMvpScore = -1;
         let maxKillsForMvp = 0;
@@ -1604,8 +1618,6 @@ function renderHistory() {
         // Вычисление оценки (Score) для MVP
         Object.keys(ovr).forEach(nick => {
             let st = ovr[nick];
-            // Формула 5.4.0: Фраги имеют высокий вес, КД влияет косвенно через смерти (минус очки или базово). 
-            // ADR (dmg/totalRounds) и utility имеют значение.
             let kd = st.d > 0 ? (st.k / st.d) : st.k;
             let score = (st.k * 2) + (st.a * 1.5) + (st.plants * 2.5) + (st.defuses * 2.5) + (st.dmg / 20) + (kd * 2);
             
