@@ -4,9 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="Esports Manager Pro - Advanced Match Simulation System">
-<meta name="version" content="5.8.1">
+<meta name="version" content="5.8.0">
 <meta name="author" content="Gemini AI Collaboration">
-<title>MATCH SIMULATION v5.8.1 PRO</title>
+<title>MATCH SIMULATION v5.8.0 PRO</title>
 
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
@@ -539,7 +539,7 @@
 <div class="container">
     <div id="authSection">
         <h1>MATCH SIMULATION</h1>
-        <div class="sub-title">VERSION 5.8.1 PRO</div>
+        <div class="sub-title">VERSION 5.8.0 PRO</div>
         
         <div class="changelog-container">
             <div class="changelog-header">
@@ -650,7 +650,7 @@
 
 <script>
 /* ========================================================================
-   ULTRA ENGINE JAVASCRIPT - v5.8.1 PRO
+   ULTRA ENGINE JAVASCRIPT - v5.8.0 PRO
    ======================================================================== */
 
 function cleanName(name) {
@@ -682,7 +682,6 @@ const MAP_DATA = {
 const MAP_POOL = Object.keys(MAP_DATA);
 
 const UPDATES = [
-    { v: "5.8.1", items: ["Изменена система подсчета морали."] },
     { v: "5.8.0", items: ["Исправлена проблема 13 поражений подряд: внедрена система 'Морали' (Momentum). Длительные серии побед теперь дают бонус к шансам команды, делая камбэки реалистичными, а доминацию — заслуженной.", "Умный закуп после пистолетки: победившая команда в 1 и 13 раундах больше не уходит в Eco, а делает уверенный Force-buy (закупка SMG/Famas/Galil + броня), как в реальном CS2.", "Точная экономика CS2: перераспределены награды за раунд. Победа взрывом/дефьюзом теперь дает $17,500 ($3,500/игрок), победа зачисткой — $16,250. Поражение с установленной бомбой дает команде атаки бонус +$4,000 (+$800/игрок).", "Награда за установку: игрок, установивший или разминировавший бомбу, приносит себе и команде $300 индивидуального бонуса, а не $1500 как раньше."] },
     { v: "5.7.0", items: ["Глобальный апдейт экономики: теперь система учитывает не только деньги, но и сохраненное оружие (Firepower Index).", "Умный ECO-закуп: если команда сохранила 3 и более девайса, она больше не уходит в глухое ECO, а докупает остальным игрокам (FORCE).", "Индивидуальный инвентарь: каждый игрок теперь имеет свой слот под оружие, броню и гранаты (Smoke, Flash, HE).", "Интеграция гранат в лог: добавлены реалистичные убийства 'в дыму', 'под флешку' или 'после HE' в зависимости от наличия гранат у игрока.", "Динамический шанс победы: штраф за ECO больше не фиксирован (-35%), а высчитывается математически из разницы общей огневой мощи команд."] },
     { v: "5.6.0", items: ["Реалистичная экономика выживания: игроки сохраняют броню, гранаты и оружие, если выжили в раунде.", "Индивидуальный закуп: командные траты теперь складываются из покупок каждого отдельного игрока в зависимости от его сохраненной экипировки.", "Детализация выживших: в лог раунда добавлена информация о том, кто выжил и какие девайсы сохранил на следующий раунд.", "Сброс инвентаря при смене сторон: корректное обнуление сохраненного оружия при переходе за другую сторону."] },
@@ -692,7 +691,7 @@ const UPDATES = [
     { v: "5.4.0", items: ["Новая система расчета Match MVP (теперь учитываются Kills, Assists, Plants, Defuses, ADR и K/D для точности).", "Цветовая индикация игроков в логах раундов: Оранжевый для T, Голубой для CT (динамическая смена при смене сторон).", "Изменена система силы: теперь сила задается всей команде сразу при создании. Игроки больше не требуют ввода силы вручную.", "Детализация экономики: теперь в истории раунда отображается бюджет команд до закупа и после, а также доход за текущий раунд.", "Реалистичная экономика: скорректированы пороги ECO/Force (теперь чаще играют ECO), на допах команды всегда имеют максимум денег и играют FULL.", "Детализация расчёта шансов: в логе каждого раунда теперь выводится сводка того, из чего складывается шанс на победу (База + Сторона + Экономика)."] },
     { v: "5.3.0", items: ["Новая продвинутая статистика игроков (Kills, Assists, Deaths, K/D, ADR, HS%, Plants, Defuses).", "Игроки в статистике теперь сортируются от лучшего к худшему по количеству фрагов.", "Добавлен Match MVP (Самый ценный игрок по итогам всех карт матча).", "Обновлена логика выживаемости: теперь при взрыве бомбы (T) или обезвреживании (CT) часть проигравшей команды может спастись, а не умирать в полном составе.", "Экономика улучшена: пороги Eco скорректированы (<$8000), чтобы Eco раунды стали реалистичными и происходили чаще после сброса экономики.", "Отключено влияние Капитана на общие шансы команды по просьбе пользователя.", "Восстановлена функция полного удаления турниров (кнопка крестик) для администраторов.", "Архивированные турниры теперь корректно сортируются: самые последние завершенные ивенты выводятся первыми в архиве."] },
     { v: "5.2.0", items: ["Глобальное обновление симуляции раундов и статистики игроков.", "Полностью переработан интерфейс истории матча: теперь каждый раунд выводится с новой строки с возможностью развернуть и посмотреть детальные события (кто кого убил, установка бомбы, дефьюз).", "Интегрирована система оружия: игроки закупают AWP, AK-47, M4A4 и др. в зависимости от своей роли и экономики.", "Добавлена таблица послематчевой статистики игроков (K/D, Plants, Defuses).", "Экономика масштабирована до реалистичных командных значений CS2 (с учетом бонусов за киллы и бомбу).", "Шансы на победу теперь отображаются перед каждым раундом в деталях."] },
-    { v: "5.1.0", items: ["Исправлено экономика: корректное списание средств при закупах, точные выплаты CS2 за лузстрики, адекватные пороги Eco/Force/Full.", "Возвращено полное отображение Veto, сторон, бонусов и формата в истории (как в 4.17.3).", "Улучшена визуализация Entry-киллов (теперь понятно, кто сделал минус).", "Восстановлена полная история обновлений и логлист."] },
+    { v: "5.1.0", items: ["Исправлена экономика: корректное списание средств при закупах, точные выплаты CS2 за лузстрики, адекватные пороги Eco/Force/Full.", "Возвращено полное отображение Veto, сторон, бонусов и формата в истории (как в 4.17.3).", "Улучшена визуализация Entry-киллов (теперь понятно, кто сделал минус).", "Восстановлена полная история обновлений и логлист."] },
     { v: "5.0.0", items: ["ULTRA Update: Добавлена система экономики CS2 (Money, Eco, Force, Full).", "Ростеры игроков: теперь в команде 5 игроков с уникальными ролями.", "Система фаз: раунд делится на Entry, Mid-round и Clutch.", "Пошаговая симуляция: кнопка симуляции по 1 раунду.", "Сила команды теперь автоматически считается от суммы сил игроков."] },
     { v: "4.17.3", items: ["Исправлен визуальный баг с двойным переносом строк (MR12).", "Оптимизирована сетка овертаймов: теперь перенос происходит строго каждые 3 раунда."] },
     { v: "4.17.2", items: ["Исправление бага с входом для зрителей."]},
@@ -1219,13 +1218,9 @@ function conductUltraRound(t1, t2, mObj, state) {
     });
 
     // 3. РАСЧЕТ ШАНСОВ (Математика по Firepower 5.8.0 + Morale)
-    // Добавь это в блок инициализации:
-    state.morale1 = state.morale1 || 0; // Накопленный бонус команды 1
-    state.morale2 = state.morale2 || 0; // Накопленный бонус команды 2
-    // НОВЫЙ РАСЧЕТ МОРАЛИ:
-    let moraleMod = state.morale1 - state.morale2;
-    
-    
+    let p1 = calculateTeamPower(t1);
+    let p2 = calculateTeamPower(t2);
+    let baseChance = (p1 / (p1 + p2)) * 100;
     
     let sideChanceMod = 0;
     let sideStrong = MAP_DATA[mObj.name].side;
@@ -1384,190 +1379,25 @@ function conductUltraRound(t1, t2, mObj, state) {
     let totalEarned1 = roundEarnedM1;
     let totalEarned2 = roundEarnedM2;
 
-    // 5.8.1 Fix: Детализация выигрышей и луз-стриков
-        const LIMIT = 10.0;
-
+    // 5.8.0 Fix: Детализация выигрышей и луз-стриков
     if(win1) {
         state.r1++; state.l1 = 0; state.l2++;
-        state.streak1++; state.streak2 = 0; 
+        state.streak1++; state.streak2 = 0; state.lastWin = 1;
         
-        // 1. Считаем мораль
-        let gain = (state.streak1 === 1) ? 1.5 : (state.streak1 === 2) ? 1.0 : 0.5;
-        state.morale1 = Math.min((state.morale1 || 0) + gain, LIMIT);
-        state.morale2 = 0; 
-        state.lastWin = 1;
-
-        // 2. Считаем деньги (Экономика)
+        // Взрыв (T) или Дефьюз (CT) дают больше, чем Elimination
         let winBonus1 = ((isBombPlant && t1IsT) || (isDefuse && !t1IsT)) ? 17500 : 16250;
         totalEarned1 += winBonus1; 
         
         let lossBonus2 = getLossMoney(state.l2 - 1);
-        if (isBombPlant && t2IsT) lossBonus2 += 4000; // Бонус Т за поставленную бомбу
+        // Если Террористы проиграли, но ставили бомбу, им бонус +$4000
+        if (isBombPlant && t2IsT) lossBonus2 += 4000;
         
         totalEarned2 += lossBonus2;
         state.m1 += totalEarned1; state.m2 += totalEarned2;
-
     } else {
         state.r2++; state.l2 = 0; state.l1++;
-        state.streak2++; state.streak1 = 0;
+        state.streak2++; state.streak1 = 0; state.lastWin = 2;
         
-        // 1. Считаем мораль
-        let gain = (state.streak2 === 1) ? 1.5 : (state.strefunction conductUltraRound(t1, t2, mObj, state) {
-    t1.players = Array.isArray(t1.players) ? t1.players : Object.values(t1.players || {});
-    t2.players = Array.isArray(t2.players) ? t2.players : Object.values(t2.players || {});
-
-    // 1. Инициализация статистики и инвентарей
-    if (!state.pStats) {
-        state.pStats = { t1: {}, t2: {} };
-        state.inventories = { t1: {}, t2: {} };
-        t1.players.forEach(p => {
-            state.pStats.t1[p.nick] = { role: p.role, k: 0, a: 0, d: 0, dmg: 0, hs: 0, plants: 0, defuses: 0 };
-            state.inventories.t1[p.nick] = { w: null, a: false, g: [] };
-        });
-        t2.players.forEach(p => {
-            state.pStats.t2[p.nick] = { role: p.role, k: 0, a: 0, d: 0, dmg: 0, hs: 0, plants: 0, defuses: 0 };
-            state.inventories.t2[p.nick] = { w: null, a: false, g: [] };
-        });
-    }
-    
-    state.streak1 = state.streak1 || 0;
-    state.streak2 = state.streak2 || 0;
-    state.lastWin = state.lastWin || 0;
-    state.morale1 = state.morale1 || 0;
-    state.morale2 = state.morale2 || 0;
-
-    let t1IsT = (state.r < 12) ? state.t1T : !state.t1T; 
-    let t2IsT = !t1IsT;
-    let isOT = false;
-    let otResetMsg = false;
-    
-    if(state.r >= 24) {
-        t1IsT = (Math.floor((state.r-24)/3) % 2 === 0) ? state.t1T : !state.t1T;
-        t2IsT = !t1IsT;
-        isOT = true;
-    }
-
-    let isPistol = (state.r === 0 || state.r === 12);
-    
-    if(isOT && ((state.r - 24) % 3 === 0)) {
-        state.m1 = 50000;
-        state.m2 = 50000;
-        otResetMsg = true;
-    }
-
-    let gear1 = evaluateSavedGear(t1.players, state.inventories.t1);
-    let gear2 = evaluateSavedGear(t2.players, state.inventories.t2);
-
-    let buy1 = calculateTeamBuy(state.m1, isPistol, isOT, state.l1, state.r, gear1, (state.lastWin === 1));
-    let buy2 = calculateTeamBuy(state.m2, isPistol, isOT, state.l2, state.r, gear2, (state.lastWin === 2));
-
-    let m1_start = state.m1;
-    let m2_start = state.m2;
-    state.m1 -= buy1.cost;
-    state.m2 -= buy2.cost;
-    let m1_after = state.m1;
-    let m2_after = state.m2;
-
-    let currentEquip1 = {}, currentEquip2 = {};
-    t1.players.forEach(p => {
-        let inv = state.inventories.t1[p.nick];
-        if (!inv.w || (buy1.type === "FULL" && !["AWP", "AK-47", "M4A4", "Galil AR", "FAMAS"].includes(inv.w))) {
-            inv.w = getWeaponForRole(p.role, buy1.type, t1IsT);
-            inv.a = (buy1.type !== "ECO");
-            inv.g = buy1.type === "FULL" ? ["Smoke", "Flash", "HE"] : (buy1.type === "FORCE" ? ["Flash"] : []);
-        }
-        currentEquip1[p.nick] = inv;
-    });
-
-    t2.players.forEach(p => {
-        let inv = state.inventories.t2[p.nick];
-        if (!inv.w || (buy2.type === "FULL" && !["AWP", "AK-47", "M4A4", "Galil AR", "FAMAS"].includes(inv.w))) {
-            inv.w = getWeaponForRole(p.role, buy2.type, t2IsT);
-            inv.a = (buy2.type !== "ECO");
-            inv.g = buy2.type === "FULL" ? ["Smoke", "Flash", "HE"] : (buy2.type === "FORCE" ? ["Flash"] : []);
-        }
-        currentEquip2[p.nick] = inv;
-    });
-
-    // РАСЧЕТ ШАНСОВ
-    let p1 = calculateTeamPower(t1), p2 = calculateTeamPower(t2);
-    let baseChance = 50 + (p1 - p2) * 0.5;
-    
-    let sideChanceMod = 0;
-    let sideStrong = MAP_DATA[mObj.name].side;
-    let b = MAP_DATA[mObj.name].bonus;
-    sideChanceMod = (sideStrong === "CT") ? (!t1IsT ? b : -b) : (t1IsT ? b : -b);
-    
-    let fp1 = buy1.cost + gear1.gearValue;
-    let fp2 = buy2.cost + gear2.gearValue;
-    let econChanceMod = Math.max(-35, Math.min(35, ((fp1 - fp2) / 1000) * 1.8));
-    
-    let moraleMod = (state.morale1 - state.morale2) * 2.0; // Влияние морали на шанс
-    
-    let finalChance = Math.max(5, Math.min(95, baseChance + sideChanceMod + econChanceMod + moraleMod));
-    let win1 = (Math.random() * 100) < finalChance;
-
-    let roundEvents = [];
-    let alive1 = [...t1.players], alive2 = [...t2.players];
-    let deaths1 = win1 ? Math.floor(Math.random()*5) : 5;
-    let deaths2 = win1 ? 5 : Math.floor(Math.random()*5);
-    let isBombPlant = Math.random() > 0.5, isDefuse = isBombPlant && ((win1 && !t1IsT) || (!win1 && t1IsT));
-
-    // Симуляция киллов
-    let totalK = deaths1 + deaths2;
-    for(let i=0; i<totalK; i++) {
-        let t1Kills = deaths2 > 0 && (deaths1 === 0 || Math.random() > 0.5);
-        if(t1Kills) {
-            deaths2--; let k = selectPlayerWeighted(t1.players), vIdx = Math.floor(Math.random()*alive2.length), v = alive2.splice(vIdx,1)[0] || t2.players[0];
-            state.pStats.t1[k.nick].k++; state.pStats.t2[v.nick].d++;
-            state.inventories.t2[v.nick] = {w:null, a:false, g:[]};
-            roundEvents.push(`<div class="event-line"><span style="color:${t1IsT?'var(--t-color)':'var(--ct-color)'}">${k.nick}</span> убил ${v.nick}</div>`);
-        } else if(deaths1 > 0) {
-            deaths1--; let k = selectPlayerWeighted(t2.players), vIdx = Math.floor(Math.random()*alive1.length), v = alive1.splice(vIdx,1)[0] || t1.players[0];
-            state.pStats.t2[k.nick].k++; state.pStats.t1[v.nick].d++;
-            state.inventories.t1[v.nick] = {w:null, a:false, g:[]};
-            roundEvents.push(`<div class="event-line"><span style="color:${t2IsT?'var(--t-color)':'var(--ct-color)'}">${k.nick}</span> убил ${v.nick}</div>`);
-        }
-    }
-
-    // Экономика и мораль (твой обновленный блок)
-    const LIMIT = 10.0;
-    const getLossMoney = (s) => (1400 + (Math.min(s, 4) * 500)) * 5;
-    let te1 = 0, te2 = 0;
-
-    if(win1) {
-        state.r1++; state.l1 = 0; state.l2++; state.streak1++; state.streak2 = 0;
-        let gain = (state.streak1 === 1) ? 1.5 : (state.streak1 === 2) ? 1.0 : 0.5;
-        state.morale1 = Math.min(state.morale1 + gain, LIMIT); state.morale2 = 0; state.lastWin = 1;
-        let winBonus = ((isBombPlant && t1IsT) || (isDefuse && !t1IsT)) ? 17500 : 16250;
-        te1 += winBonus; te2 += getLossMoney(state.l2-1) + (isBombPlant && t2IsT ? 4000 : 0);
-    } else {
-        state.r2++; state.l2 = 0; state.l1++; state.streak2++; state.streak1 = 0;
-        let gain = (state.streak2 === 1) ? 1.5 : (state.streak2 === 2) ? 1.0 : 0.5;
-        state.morale2 = Math.min(state.morale2 + gain, LIMIT); state.morale1 = 0; state.lastWin = 2;
-        let winBonus = ((isBombPlant && t2IsT) || (isDefuse && !t2IsT)) ? 17500 : 16250;
-        te2 += winBonus; te1 += getLossMoney(state.l1-1) + (isBombPlant && t1IsT ? 4000 : 0);
-    }
-    state.m1 = Math.min(state.m1 + te1, 80000); state.m2 = Math.min(state.m2 + te2, 80000);
-
-    // Логирование шансов
-    roundEvents.unshift(`<div style="font-size:10px; opacity:0.6;">Шансы: Мораль (${moraleMod.toFixed(1)}%) | Экономика (${econChanceMod.toFixed(1)}%)</div>`);
-    
-    state.h.push(`<details class="round-detail-block"><summary>R${state.r+1} | ${state.r1}:${state.r2} [${buy1.type} vs ${buy2.type}]</summary><div class="round-events">${roundEvents.join("")}</div></details>`);
-
-    if (state.r === 11) {
-        state.m1 = 4000; state.m2 = 4000; state.morale1 = 0; state.morale2 = 0;
-        state.h.push(`<div style="text-align:center; color:var(--accent);">--- СМЕНА СТОРОН ---</div>`);
-    }
-    state.r++;
-    return state;
-}
-ak2 === 2) ? 1.0 : 0.5;
-        state.morale2 = Math.min((state.morale2 || 0) + gain, LIMIT);
-        state.morale1 = 0; 
-        state.lastWin = 2;
-
-        // 2. Считаем деньги (Экономика)
         let winBonus2 = ((isBombPlant && t2IsT) || (isDefuse && !t2IsT)) ? 17500 : 16250;
         totalEarned2 += winBonus2; 
         
@@ -1578,6 +1408,67 @@ ak2 === 2) ? 1.0 : 0.5;
         state.m2 += totalEarned2; state.m1 += totalEarned1;
     }
 
+    state.m1 = Math.min(state.m1, 80000); 
+    state.m2 = Math.min(state.m2, 80000);
+
+    let chanceLogHtml = `
+    <div style="background: rgba(255,255,255,0.03); padding: 10px 15px; border-radius: 8px; margin-bottom: 12px; font-size: 11px; border-left: 3px solid #4a90e2;">
+        <b style="color:var(--info)">РАСЧЕТ ШАНСОВ ПЕРЕД РАУНДОМ:</b><br>
+        <span style="opacity:0.8">• База (Сила): ${t1.name} ${baseChance.toFixed(1)}% vs ${t2.name} ${(100-baseChance).toFixed(1)}%</span><br>
+        <span style="opacity:0.8">• Бонус стороны (${mObj.name} - ${sideStrong}): ${sideChanceMod > 0 ? '+' : ''}${sideChanceMod.toFixed(1)}% для ${t1.name}</span><br>
+        <span style="opacity:0.8">• Экономика (Firepower: $${fp1} vs $${fp2}): ${econChanceMod > 0 ? '+' : ''}${econChanceMod.toFixed(1)}% для ${t1.name}</span><br>
+        <span style="opacity:0.8">• Мораль (Streak): ${moraleMod > 0 ? '+' : ''}${moraleMod.toFixed(1)}% для ${t1.name}</span><br>
+        <b style="color:var(--accent); margin-top:5px; display:inline-block;">ИТОГОВЫЙ ШАНС ПОБЕДЫ: ${t1.name.toUpperCase()} ${finalChance.toFixed(1)}% | ${t2.name.toUpperCase()} ${(100-finalChance).toFixed(1)}%</b>
+    </div>`;
+    
+    roundEvents.unshift(chanceLogHtml);
+
+    let incomeLogHtml = `
+    <div style="background: rgba(0,255,65,0.03); padding: 8px 15px; border-radius: 8px; margin-top: 12px; font-size: 11px; border-left: 3px solid #00ff41; color:#a0a0a0;">
+        <b>Доход по итогам раунда:</b> ${t1.name} <span style="color:var(--accent)">+$${totalEarned1}</span> | ${t2.name} <span style="color:var(--accent)">+$${totalEarned2}</span>
+    </div>`;
+    roundEvents.push(incomeLogHtml);
+
+    let ecoLabel1 = `<span class="economy-label ${buy1.type.toLowerCase()}-tag">${buy1.type}</span>`;
+    let ecoLabel2 = `<span class="economy-label ${buy2.type.toLowerCase()}-tag">${buy2.type}</span>`;
+    
+    let moneyInfo1 = `<span class="econ-summary">$${m1_start} ➝ $${m1_after}</span>`;
+    let moneyInfo2 = `<span class="econ-summary">$${m2_start} ➝ $${m2_after}</span>`;
+    
+    if(otResetMsg) roundEvents.unshift(`<div class="event-line" style="color:var(--accent); font-weight:bold; font-size:14px; text-align:center; padding: 10px 0;">[OVERTIME: СБРОС ДЕНЕГ ДО СТАРТОВЫХ ($10,000 НА ИГРОКА)]</div>`);
+
+    let htmlBlock = `
+    <details class="round-detail-block">
+        <summary>
+            <div>
+                <span style="opacity:0.5; margin-right:10px;">R${state.r+1}</span>
+                <span class="${t1IsT?'r-t':'r-ct'}">${state.r1}</span> : <span class="${t1IsT?'r-ct':'r-t'}">${state.r2}</span>
+                <span style="margin-left: 15px; font-size:11px; opacity:0.8;">Win Chance: ${finalChance.toFixed(1)}% vs ${(100-finalChance).toFixed(1)}%</span>
+            </div>
+            <div>
+                ${ecoLabel1} ${moneyInfo1} <span style="margin: 0 10px; opacity: 0.5;">VS</span> ${moneyInfo2} ${ecoLabel2}
+            </div>
+        </summary>
+        <div class="round-events">${roundEvents.join("")}</div>
+    </details>`;
+    
+    state.h.push(htmlBlock);
+    
+    // Смена сторон (Сброс инвентаря)
+    if (state.r === 11 || (state.r >= 23 && (state.r - 23) % 3 === 0)) {
+        state.h.push(`<div style="text-align:center; padding: 15px; color:var(--accent); font-weight:bold; font-size:13px; letter-spacing:3px; background:rgba(0,255,65,0.05); border-radius:8px; margin: 15px 0; border: 1px dashed var(--accent);">--- СМЕНА СТОРОН (СБРОС ИНВЕНТАРЯ И МОРАЛИ) ---</div>`);
+        if(state.r === 11) { 
+            state.m1 = 4000; state.m2 = 4000; state.l1 = 0; state.l2 = 0;
+            state.streak1 = 0; state.streak2 = 0; state.lastWin = 0; // Сброс морали
+        }
+        
+        t1.players.forEach(p => state.inventories.t1[p.nick] = { w: null, a: false, g: [] });
+        t2.players.forEach(p => state.inventories.t2[p.nick] = { w: null, a: false, g: [] });
+    }
+    
+    state.r++;
+    return state;
+}
 
 function renderActiveMatch() {
     const am = activeMatch; 
