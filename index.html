@@ -4,9 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="Esports Manager Pro - Advanced Match Simulation System">
-<meta name="version" content="5.8.0">
+<meta name="version" content="5.8.1">
 <meta name="author" content="Gemini AI Collaboration">
-<title>MATCH SIMULATION v5.8.0 PRO</title>
+<title>MATCH SIMULATION v5.8.1 PRO</title>
 
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
@@ -539,7 +539,7 @@
 <div class="container">
     <div id="authSection">
         <h1>MATCH SIMULATION</h1>
-        <div class="sub-title">VERSION 5.8.0 PRO</div>
+        <div class="sub-title">VERSION 5.8.1 PRO</div>
         
         <div class="changelog-container">
             <div class="changelog-header">
@@ -650,7 +650,7 @@
 
 <script>
 /* ========================================================================
-   ULTRA ENGINE JAVASCRIPT - v5.8.0 PRO
+   ULTRA ENGINE JAVASCRIPT - v5.8.1 PRO
    ======================================================================== */
 
 function cleanName(name) {
@@ -682,6 +682,7 @@ const MAP_DATA = {
 const MAP_POOL = Object.keys(MAP_DATA);
 
 const UPDATES = [
+    { v: "5.8.1", items: ["Улучшена система 'Морали' (Momentum): теперь бонусы начисляются по плавной кривой. Первая победа дает +1.5%, вторая +1.0%, третья и последующие +0.5%.", "Введен жесткий лимит (кап) доминации в 10%, чтобы предотвратить бесконечный рост шансов (Snowball эффект) при очень длинных сериях.", "Алгоритм расчета шансов теперь имитирует реалистичное психологическое плато команд в соревновательном CS2."] },
     { v: "5.8.0", items: ["Исправлена проблема 13 поражений подряд: внедрена система 'Морали' (Momentum). Длительные серии побед теперь дают бонус к шансам команды, делая камбэки реалистичными, а доминацию — заслуженной.", "Умный закуп после пистолетки: победившая команда в 1 и 13 раундах больше не уходит в Eco, а делает уверенный Force-buy (закупка SMG/Famas/Galil + броня), как в реальном CS2.", "Точная экономика CS2: перераспределены награды за раунд. Победа взрывом/дефьюзом теперь дает $17,500 ($3,500/игрок), победа зачисткой — $16,250. Поражение с установленной бомбой дает команде атаки бонус +$4,000 (+$800/игрок).", "Награда за установку: игрок, установивший или разминировавший бомбу, приносит себе и команде $300 индивидуального бонуса, а не $1500 как раньше."] },
     { v: "5.7.0", items: ["Глобальный апдейт экономики: теперь система учитывает не только деньги, но и сохраненное оружие (Firepower Index).", "Умный ECO-закуп: если команда сохранила 3 и более девайса, она больше не уходит в глухое ECO, а докупает остальным игрокам (FORCE).", "Индивидуальный инвентарь: каждый игрок теперь имеет свой слот под оружие, броню и гранаты (Smoke, Flash, HE).", "Интеграция гранат в лог: добавлены реалистичные убийства 'в дыму', 'под флешку' или 'после HE' в зависимости от наличия гранат у игрока.", "Динамический шанс победы: штраф за ECO больше не фиксирован (-35%), а высчитывается математически из разницы общей огневой мощи команд."] },
     { v: "5.6.0", items: ["Реалистичная экономика выживания: игроки сохраняют броню, гранаты и оружие, если выжили в раунде.", "Индивидуальный закуп: командные траты теперь складываются из покупок каждого отдельного игрока в зависимости от его сохраненной экипировки.", "Детализация выживших: в лог раунда добавлена информация о том, кто выжил и какие девайсы сохранил на следующий раунд.", "Сброс инвентаря при смене сторон: корректное обнуление сохраненного оружия при переходе за другую сторону."] },
@@ -1094,7 +1095,7 @@ const evaluateSavedGear = (teamPlayers, invState) => {
     return { fullCount, gearValue };
 };
 
-// 5.8.0 - Добавлен учет победы в прошлом раунде для умного FORCE-закупа
+// Учет победы в прошлом раунде для умного FORCE-закупа
 const calculateTeamBuy = (money, isPistol, isOT, lossStreak, currentRound, savedGear, wonLastRound) => {
     if(isOT) {
         let cost = Math.min(money, 23500);
@@ -1102,7 +1103,7 @@ const calculateTeamBuy = (money, isPistol, isOT, lossStreak, currentRound, saved
     }
     if(isPistol) return { type: "PISTOL", cost: Math.min(money, 1500) };
     
-    // 5.8.0 Fix: Победители пистолетки больше не уходят в ECO
+    // Победители пистолетки больше не уходят в ECO
     let isAfterPistol = (currentRound === 1 || currentRound === 13);
     if (isAfterPistol && wonLastRound) {
         return { type: "FORCE", cost: Math.min(money, 15000) }; 
@@ -1217,7 +1218,7 @@ function conductUltraRound(t1, t2, mObj, state) {
         currentEquip2[p.nick] = inv;
     });
 
-    // 3. РАСЧЕТ ШАНСОВ (Математика по Firepower 5.8.0 + Morale)
+    // 3. РАСЧЕТ ШАНСОВ (Математика по Firepower + Advanced Morale 5.8.1)
     let p1 = calculateTeamPower(t1);
     let p2 = calculateTeamPower(t2);
     let baseChance = (p1 / (p1 + p2)) * 100;
@@ -1234,10 +1235,43 @@ function conductUltraRound(t1, t2, mObj, state) {
     let econChanceMod = (diff / 1000) * 1.8;
     econChanceMod = Math.max(-35, Math.min(35, econChanceMod));
     
-    // 5.8.0 Fix: Система Морали
+    // 5.8.1 UPDATE: Продвинутая система Морали с плато и лимитом 10%
     let moraleMod = 0;
-    if (state.streak1 > 0) moraleMod += Math.min(state.streak1, 5) * 1.5;
-    if (state.streak2 > 0) moraleMod -= Math.min(state.streak2, 5) * 1.5;
+    
+    /**
+     * Расчет бонуса морали на основе победной серии (стрика).
+     * @param {number} streak - Текущая серия побед команды
+     * @returns {number} Бонус в процентах к шансу на победу
+     */
+    const calculateAdvancedMorale = (streak) => {
+        if (streak === 0) return 0;
+        let bonus = 0;
+        
+        // Первая победа: +1.5%
+        if (streak >= 1) {
+            bonus += 1.5;
+        }
+        
+        // Вторая победа: +1.0%
+        if (streak >= 2) {
+            bonus += 1.0;
+        }
+        
+        // Третья победа и далее: +0.5% за каждую
+        if (streak >= 3) {
+            bonus += (streak - 2) * 0.5;
+        }
+        
+        // Максимальный лимит (плато) - 10%
+        return Math.min(bonus, 10.0);
+    };
+
+    if (state.streak1 > 0) {
+        moraleMod += calculateAdvancedMorale(state.streak1);
+    }
+    if (state.streak2 > 0) {
+        moraleMod -= calculateAdvancedMorale(state.streak2);
+    }
     
     let finalChance = baseChance + sideChanceMod + econChanceMod + moraleMod;
     finalChance = Math.max(5, Math.min(95, finalChance));
@@ -1348,7 +1382,6 @@ function conductUltraRound(t1, t2, mObj, state) {
         }
     }
 
-    // 5.8.0 Fix: Точные бонусы за плант
     if (isBombPlant) {
         let planterTeam = t1IsT ? t1 : t2;
         let planterTeamObj = t1IsT ? state.pStats.t1 : state.pStats.t2;
@@ -1379,7 +1412,6 @@ function conductUltraRound(t1, t2, mObj, state) {
     let totalEarned1 = roundEarnedM1;
     let totalEarned2 = roundEarnedM2;
 
-    // 5.8.0 Fix: Детализация выигрышей и луз-стриков
     if(win1) {
         state.r1++; state.l1 = 0; state.l2++;
         state.streak1++; state.streak2 = 0; state.lastWin = 1;
