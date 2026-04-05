@@ -4,9 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="Esports Manager Pro - Advanced Match Simulation System">
-<meta name="version" content="5.5.0">
+<meta name="version" content="5.6.0">
 <meta name="author" content="Gemini AI Collaboration">
-<title>MATCH SIMULATION v5.5.0 PRO</title>
+<title>MATCH SIMULATION v5.6.0 PRO</title>
 
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
@@ -539,7 +539,7 @@
 <div class="container">
     <div id="authSection">
         <h1>MATCH SIMULATION</h1>
-        <div class="sub-title">VERSION 5.5.0 PRO</div>
+        <div class="sub-title">VERSION 5.6.0 PRO</div>
         
         <div class="changelog-container">
             <div class="changelog-header">
@@ -650,10 +650,10 @@
 
 <script>
 /* ========================================================================
-   ULTRA ENGINE JAVASCRIPT - v5.5.0 PRO
+   ULTRA ENGINE JAVASCRIPT - v5.6.0 PRO
    ======================================================================== */
 
-// FIX 5.5.0: Глобальная функция очистки от запрещенных символов базы данных
+// Функция очистки от запрещенных символов базы данных
 function cleanName(name) {
     if (!name) return "";
     return name.replace(/[.#$\[\]\/]/g, "").trim();
@@ -683,9 +683,9 @@ const MAP_DATA = {
 };
 const MAP_POOL = Object.keys(MAP_DATA);
 
-// FULL CHANGELOG RESTORED + NEW UPDATES 5.5.0
-// Соблюдение правила сохранения всей истории обновлений
+// FULL CHANGELOG RESTORED + NEW UPDATES 5.6.0
 const UPDATES = [
+    { v: "5.6.0", items: ["Реалистичная экономика выживания: игроки сохраняют броню, гранаты и оружие, если выжили в раунде.", "Индивидуальный закуп: командные траты теперь складываются из покупок каждого отдельного игрока в зависимости от его сохраненной экипировки.", "Детализация выживших: в лог раунда добавлена информация о том, кто выжил и какие девайсы сохранил на следующий раунд.", "Сброс инвентаря при смене сторон: корректное обнуление сохраненного оружия при переходе за другую сторону."] },
     { v: "5.5.0", items: ["Реалистичная экономика CS2: команды теперь чаще уходят в ECO (сохранение средств) для гарантированного FULL закупа, избегая постоянной 'петли форс-баев'. Алгоритм учитывает луз-стрик и ожидаемый доход.", "Анти-баг система никнеймов: автоматическая очистка ников от запрещенных символов Firebase (#, [, ], ., $, /), из-за которых не запускались матчи.", "Умный закуп в конце половины: в 12-м и 24-м раундах команды всегда закупаются на все доступные деньги."] },
     { v: "5.4.2", items: ["HOTFIX: Исправлен критический баг, из-за которого симуляция матча не запускалась. Проблема возникала из-за конвертации массивов игроков в объекты базой данных Firebase при переносе команд или удалении игроков (Sparse Arrays).", "Оптимизирована стабильность: теперь массивы команд и игроков строго нормализуются (через Object.values) перед каждым раундом и расчетом силы."] },
     { v: "5.4.1", items: ["Исправлен баг с уходом экономики в минус: теперь команда не может закупиться на сумму больше, чем у нее есть на балансе.", "Полностью переработана экономика овертаймов: теперь в начале каждых 3 раундов (полупериод) командам выдается стартовый капитал $10,000 на игрока ($50,000 на команду), который переносится между раундами реалистично.", "В детализации раунда (сводке перед раундом) шанс на победу теперь отображается для обеих команд.", "В кратком логе (Timeline) шансы больше не округляются до целых чисел, а показывают десятые доли процента (например, 51.2% vs 48.8%).", "Глобальное сохранение ростеров: при создании нового турнира, система автоматически перенесет в него все команды из вашего самого большого предыдущего турнира."] },
@@ -778,14 +778,13 @@ function checkState() {
     }
 }
 
-// --- TOURNAMENT MANAGEMENT (UPDATED 5.3.0/5.4.1/5.4.2) ---
+// --- TOURNAMENT MANAGEMENT ---
 function loadTournaments() {
     db.ref("tournaments").on("value", s => {
         const val = s.val() || {};
         tournaments = Object.keys(val).map(k => ({...val[k], realId: k})).sort((a,b) => {
             if(a.status === 'active' && b.status !== 'active') return -1;
             if(a.status !== 'active' && b.status === 'active') return 1;
-            // Сортировка архива: самые последние завершенные (finishedAt) сверху
             if(a.status === 'finished' && b.status === 'finished') {
                 return (b.finishedAt || b.id) - (a.finishedAt || a.id);
             }
@@ -811,7 +810,6 @@ function createTourney() {
         let newRef = db.ref("tournaments").push({ name: n, status: "active", id: Date.now() }); 
         let newTourneyId = newRef.key;
         
-        // Автоматическое копирование ростера команд из самого заполненного турнира
         db.ref("teams").once("value", s => {
             let allTeams = s.val() || {};
             let bestTeams = [];
@@ -846,7 +844,7 @@ function deleteTourney(id) {
     }
 }
 
-// --- TEAM & PLAYER ENGINE 5.4.2 ---
+// --- TEAM & PLAYER ENGINE ---
 function loadTourneyData() {
     db.ref("tournaments/" + currentTourneyId).on("value", s => {
         const t = s.val(); 
@@ -856,14 +854,12 @@ function loadTourneyData() {
     
     db.ref("teams/" + currentTourneyId).on("value", s => { 
         let rawTeams = s.val() || [];
-        // FIX 5.4.2: Строгая нормализация массивов Firebase, чтобы избежать краша (Sparse Arrays)
         teams = (Array.isArray(rawTeams) ? rawTeams : Object.values(rawTeams)).map(t => {
             if (t) {
-                // Если players загрузился как объект {0: {...}, 2: {...}}, превращаем обратно в плотный массив
                 t.players = Array.isArray(t.players) ? t.players : Object.values(t.players || {});
             }
             return t;
-        }).filter(t => t); // Удаляем возможные null элементы
+        }).filter(t => t); 
 
         updateSelectors(); 
     });
@@ -905,13 +901,8 @@ function addTeam() {
     let p = document.getElementById("tPower");
     
     if(n.value && p.value) { 
-        // В 5.4.1 сила задается сразу при создании команды
         let teamPower = parseInt(p.value) || 50;
-        teams.push({ 
-            name: n.value, 
-            power: teamPower, 
-            players: [] 
-        }); 
+        teams.push({ name: n.value, power: teamPower, players: [] }); 
         
         db.ref("teams/" + currentTourneyId).set(teams); 
         n.value = ""; 
@@ -945,7 +936,6 @@ function renderPlayers() {
     const t = teams[editingTeamIdx];
     const list = document.getElementById("playerList");
     
-    // FIX 5.4.2: Безопасное чтение ростера
     let pArr = Array.isArray(t.players) ? t.players : Object.values(t.players || {});
     
     list.innerHTML = pArr.map((p, i) => `
@@ -959,17 +949,14 @@ function renderPlayers() {
 
 function savePlayer() {
     const t = teams[editingTeamIdx];
-    // FIX 5.4.2: Превентивная нормализация
     t.players = Array.isArray(t.players) ? t.players : Object.values(t.players || {});
     
     if(t.players.length >= 5) return alert("В команде может быть только 5 игроков.");
     
-    // FIX 5.5.0: Очищаем ник от запрещенных для БД символов перед сохранением
     const nick = cleanName(document.getElementById("pNick").value);
     const role = document.getElementById("pRole").value;
     
     if(nick) {
-        // Сила игрока теперь игнорируется в 5.4.1, сохраняем только имя и роль
         t.players.push({ nick, role });
         
         db.ref("teams/" + currentTourneyId).set(teams);
@@ -981,7 +968,6 @@ function savePlayer() {
 }
 
 function removePlayer(idx) {
-    // FIX 5.4.2: Нормализация перед удалением
     teams[editingTeamIdx].players = Array.isArray(teams[editingTeamIdx].players) ? teams[editingTeamIdx].players : Object.values(teams[editingTeamIdx].players || {});
     teams[editingTeamIdx].players.splice(idx, 1);
     db.ref("teams/" + currentTourneyId).set(teams);
@@ -990,7 +976,6 @@ function removePlayer(idx) {
 
 function calculateTeamPower(team) {
     if (team.power !== undefined && team.power > 0) return team.power;
-    // FIX 5.4.2: Безопасное получение массива для старых команд
     let pArr = Array.isArray(team.players) ? team.players : Object.values(team.players || {});
     if (pArr.length === 0) return 0;
     return pArr.reduce((sum, p) => sum + (p.power || 0), 0);
@@ -1094,8 +1079,7 @@ function startVeto() {
     renderActiveMatch();
 }
 
-// --- VERSION 5.5.0: ADVANCED CS2 ROUND SIMULATION ENGINE ---
-// Вспомогательные функции для расчета киллов и оружия
+// --- VERSION 5.6.0: ADVANCED CS2 ROUND SIMULATION & SURVIVAL ENGINE ---
 function getWeaponForRole(role, ecoType, isT) {
     if (ecoType === "PISTOL") return isT ? "Glock-18" : "USP-S";
     if (ecoType === "ECO") return isT ? "P250" : "P250";
@@ -1103,7 +1087,6 @@ function getWeaponForRole(role, ecoType, isT) {
         if (role === "Sniper") return "SSG 08";
         return isT ? "MAC-10" : "MP9";
     }
-    // FULL BUY
     if (role === "Sniper") return "AWP";
     if (role === "Support") return isT ? "Galil AR" : "FAMAS";
     return isT ? "AK-47" : "M4A4";
@@ -1115,7 +1098,7 @@ function getPlayerKillWeight(role) {
     if (role === 'Rifler') return 20;
     if (role === 'Support') return 15;
     if (role === 'Captain') return 10;
-    return 20; // fallback
+    return 20; 
 }
 
 function selectPlayerWeighted(playersArr) {
@@ -1131,24 +1114,29 @@ function selectPlayerWeighted(playersArr) {
 }
 
 function conductUltraRound(t1, t2, mObj, state) {
-    // FIX 5.4.2: Дополнительная гарантия того, что массивы не стали объектами при загрузке старых данных в стейт матча
     t1.players = Array.isArray(t1.players) ? t1.players : Object.values(t1.players || {});
     t2.players = Array.isArray(t2.players) ? t2.players : Object.values(t2.players || {});
 
-    // 1. Инициализация индивидуальной статистики
+    // 1. Инициализация индивидуальной статистики и ИНВЕНТАРЯ (5.6.0)
     if (!state.pStats) {
         state.pStats = { t1: {}, t2: {} };
-        t1.players.forEach(p => state.pStats.t1[p.nick] = { role: p.role, k: 0, a: 0, d: 0, dmg: 0, hs: 0, plants: 0, defuses: 0 });
-        t2.players.forEach(p => state.pStats.t2[p.nick] = { role: p.role, k: 0, a: 0, d: 0, dmg: 0, hs: 0, plants: 0, defuses: 0 });
+        state.pInv = { t1: {}, t2: {} }; // Объект инвентаря для отслеживания выживших вещей
+        
+        t1.players.forEach(p => { 
+            state.pStats.t1[p.nick] = { role: p.role, k: 0, a: 0, d: 0, dmg: 0, hs: 0, plants: 0, defuses: 0 };
+            state.pInv.t1[p.nick] = { weapon: null, armor: false, nades: false };
+        });
+        t2.players.forEach(p => { 
+            state.pStats.t2[p.nick] = { role: p.role, k: 0, a: 0, d: 0, dmg: 0, hs: 0, plants: 0, defuses: 0 };
+            state.pInv.t2[p.nick] = { weapon: null, armor: false, nades: false };
+        });
     }
 
-    // Определяем сторону команд (T или CT)
     let t1IsT = (state.r < 12) ? state.t1T : !state.t1T; 
     let t2IsT = !t1IsT;
     let isOT = false;
     let otResetMsg = false;
     
-    // Проверка овертаймов (после 24 раундов)
     if(state.r >= 24) {
         t1IsT = (Math.floor((state.r-24)/3) % 2 === 0) ? state.t1T : !state.t1T;
         t2IsT = !t1IsT;
@@ -1157,7 +1145,6 @@ function conductUltraRound(t1, t2, mObj, state) {
 
     let isPistol = (state.r === 0 || state.r === 12);
     
-    // В овертайме $10,000 на игрока выдается только раз в 3 раунда (задача 5.4.1)
     if(isOT) {
         if ((state.r - 24) % 3 === 0) {
             state.m1 = 50000;
@@ -1166,7 +1153,7 @@ function conductUltraRound(t1, t2, mObj, state) {
         }
     }
 
-    // 2. РАСЧЕТ ЭКОНОМИКИ (Реалистичные пороги с учетом баланса 5.5.0)
+    // 2. РАСЧЕТ ЭКОНОМИКИ (Стратегия закупа)
     const calculateTeamBuy = (money, isPistol, isOT, lossStreak, currentRound) => {
         if(isOT) {
             let cost = Math.min(money, 23500);
@@ -1174,76 +1161,128 @@ function conductUltraRound(t1, t2, mObj, state) {
         }
         if(isPistol) return { type: "PISTOL", cost: Math.min(money, 1500), mult: 0.5 };
         
-        // FIX 5.5.0: Последний раунд половины (12-й или 24-й, индекс 11 или 23) - тратим всё
         if (currentRound === 11 || currentRound === 23) {
             if (money >= 19500) return { type: "FULL", cost: money, mult: 1.0 };
             return { type: "FORCE", cost: money, mult: 0.75 };
         }
 
-        // Порог FULL закупа CS2 (~$19,500 - $23,500 на команду)
         if(money >= 19500) return { type: "FULL", cost: 19500 + Math.min(money - 19500, 4000), mult: 1.0 };
         
-        // FIX 5.5.0: Интеллектуальный расчет ECO/FORCE
-        // Расчет ожидаемого дохода при поражении в этом раунде
         let expectedLossIncome = (1400 + (Math.min(lossStreak || 0, 4) * 500)) * 5;
-        
-        // Сколько мы можем потратить сейчас, чтобы в следующем раунде было ~$20,000 (FULL)
         let maxSpendToKeepFull = (money + expectedLossIncome) - 20000;
 
-        // Если денег совсем мало, делаем жесткое ECO (тратим до $1500-2000 на команду)
-        if (maxSpendToKeepFull <= 2000) {
-            return { type: "ECO", cost: Math.min(money, 1500), mult: 0.45 };
-        }
-        
-        // Если можем позволить себе FORCE и при этом выйти на FULL в следующем - делаем
-        if (maxSpendToKeepFull > 7000) {
-            return { type: "FORCE", cost: Math.min(money, maxSpendToKeepFull), mult: 0.75 };
-        }
-        
-        // Небольшой шанс рискнуть (агрессивный FORCE), если денег среднее количество (~$14k+)
-        if (money >= 14000 && Math.random() > 0.8) {
-            return { type: "FORCE", cost: money, mult: 0.75 };
-        }
+        if (maxSpendToKeepFull <= 2000) return { type: "ECO", cost: Math.min(money, 1500), mult: 0.45 };
+        if (maxSpendToKeepFull > 7000) return { type: "FORCE", cost: Math.min(money, maxSpendToKeepFull), mult: 0.75 };
+        if (money >= 14000 && Math.random() > 0.8) return { type: "FORCE", cost: money, mult: 0.75 };
 
-        // По умолчанию - сейвим (ECO), тратим только "лишние" деньги до порога сохранения
         return { type: "ECO", cost: Math.min(money, Math.max(1500, maxSpendToKeepFull)), mult: 0.45 };
     };
 
     let m1_start = state.m1;
     let m2_start = state.m2;
 
-    // FIX 5.5.0: Добавлены стрик и текущий раунд для умного закупа
-    let buy1 = calculateTeamBuy(state.m1, isPistol, isOT, state.l1, state.r);
-    let buy2 = calculateTeamBuy(state.m2, isPistol, isOT, state.l2, state.r);
+    // Сначала получаем общую стратегию закупа команды
+    let buy1_strat = calculateTeamBuy(state.m1, isPistol, isOT, state.l1, state.r);
+    let buy2_strat = calculateTeamBuy(state.m2, isPistol, isOT, state.l2, state.r);
+
+    // === 5.6.0: УМНАЯ КАЛЬКУЛЯЦИЯ РЕАЛЬНЫХ ТРАТ ИГРОКОВ (С учетом инвентаря) ===
+    const getWeaponCost = (w) => {
+        const c = { "AWP": 4750, "AK-47": 2700, "M4A4": 3100, "Galil AR": 1800, "FAMAS": 2050, "MAC-10": 1050, "MP9": 1250, "SSG 08": 1700, "P250": 300, "Glock-18": 0, "USP-S": 0 };
+        return c[w] || 0;
+    };
+
+    let realCost1 = 0;
+    t1.players.forEach(p => {
+        let inv = state.pInv.t1[p.nick];
+        let targetWeapon = getWeaponForRole(p.role, buy1_strat.type, t1IsT);
+        
+        // Если оружие сохранилось с прошлого раунда, мы его не покупаем, если оно подходит
+        if (inv.weapon && (buy1_strat.type === "ECO" || buy1_strat.type === "FORCE" || buy1_strat.type === "PISTOL")) {
+            targetWeapon = inv.weapon; // Оставляем то, что выжило (даже винтовку на ECO раунде)
+        } else if (inv.weapon && buy1_strat.type === "FULL") {
+            // Заменяем фармилки на серьезное оружие при FULL BUY
+            if (getWeaponCost(inv.weapon) < 2000 && getWeaponCost(targetWeapon) >= 2000) {
+                realCost1 += getWeaponCost(targetWeapon);
+                inv.weapon = targetWeapon;
+            } else {
+                targetWeapon = inv.weapon; // Оставляем хороший девайс
+            }
+        } else {
+            // Покупаем новое оружие
+            if (inv.weapon !== targetWeapon) {
+                realCost1 += getWeaponCost(targetWeapon);
+                inv.weapon = targetWeapon;
+            }
+        }
+
+        // Покупка брони и гранат
+        if (buy1_strat.type === "FULL" || buy1_strat.type === "FORCE") {
+            if (!inv.armor) { realCost1 += 1000; inv.armor = true; } // +Шлем
+            if (!inv.nades && buy1_strat.type === "FULL") { realCost1 += 1200; inv.nades = true; } // Фулл раскид
+        } else if (buy1_strat.type === "ECO" && state.m1 > 3000) {
+            if (!inv.armor && Math.random() > 0.5) { realCost1 += 650; inv.armor = true; } // Только кевлар
+        }
+    });
+
+    let realCost2 = 0;
+    t2.players.forEach(p => {
+        let inv = state.pInv.t2[p.nick];
+        let targetWeapon = getWeaponForRole(p.role, buy2_strat.type, t2IsT);
+        
+        if (inv.weapon && (buy2_strat.type === "ECO" || buy2_strat.type === "FORCE" || buy2_strat.type === "PISTOL")) {
+            targetWeapon = inv.weapon; 
+        } else if (inv.weapon && buy2_strat.type === "FULL") {
+            if (getWeaponCost(inv.weapon) < 2000 && getWeaponCost(targetWeapon) >= 2000) {
+                realCost2 += getWeaponCost(targetWeapon);
+                inv.weapon = targetWeapon;
+            } else {
+                targetWeapon = inv.weapon;
+            }
+        } else {
+            if (inv.weapon !== targetWeapon) {
+                realCost2 += getWeaponCost(targetWeapon);
+                inv.weapon = targetWeapon;
+            }
+        }
+
+        if (buy2_strat.type === "FULL" || buy2_strat.type === "FORCE") {
+            if (!inv.armor) { realCost2 += 1000; inv.armor = true; }
+            if (!inv.nades && buy2_strat.type === "FULL") { realCost2 += 1200; inv.nades = true; }
+        } else if (buy2_strat.type === "ECO" && state.m2 > 3000) {
+            if (!inv.armor && Math.random() > 0.5) { realCost2 += 650; inv.armor = true; }
+        }
+    });
+
+    // Защита от ухода в минус при вычислении индивидуальных нужд
+    if (realCost1 > state.m1) realCost1 = state.m1;
+    if (realCost2 > state.m2) realCost2 = state.m2;
+
+    // Переписываем старые затраты на новые реалистичные
+    let buy1 = { type: buy1_strat.type, cost: realCost1 };
+    let buy2 = { type: buy2_strat.type, cost: realCost2 };
 
     state.m1 -= buy1.cost;
     state.m2 -= buy2.cost;
     
-    // Запоминаем деньги после закупа
     let m1_after = state.m1;
     let m2_after = state.m2;
 
-    // 3. РАСЧЕТ ВЕРОЯТНОСТЕЙ (С Детализацией для лога 5.4.1)
+    // 3. РАСЧЕТ ВЕРОЯТНОСТЕЙ 
     let p1 = calculateTeamPower(t1);
     let p2 = calculateTeamPower(t2);
     
-    // Базовый шанс от силы
     let baseChance = (p1 / (p1 + p2)) * 100;
     
-    // Бонус стороны
     let sideChanceMod = 0;
     let sideStrong = MAP_DATA[mObj.name].side;
     let b = MAP_DATA[mObj.name].bonus;
     
     if (sideStrong === "CT") { 
-        if (!t1IsT) sideChanceMod += b; 
-        else sideChanceMod -= b; 
+        if (!t1IsT) sideChanceMod += b; else sideChanceMod -= b; 
     } else { 
-        if (t1IsT) sideChanceMod += b; 
-        else sideChanceMod -= b; 
+        if (t1IsT) sideChanceMod += b; else sideChanceMod -= b; 
     }
     
-    // Бонус экономики
     let econChanceMod = 0;
     if(buy1.type === "FULL" && buy2.type === "ECO") econChanceMod += 35;
     if(buy1.type === "ECO" && buy2.type === "FULL") econChanceMod -= 35;
@@ -1252,13 +1291,12 @@ function conductUltraRound(t1, t2, mObj, state) {
     if(buy1.type === "FORCE" && buy2.type === "ECO") econChanceMod += 20;
     if(buy1.type === "ECO" && buy2.type === "FORCE") econChanceMod -= 20;
     
-    // Итоговый шанс с ограничителем
     let finalChance = baseChance + sideChanceMod + econChanceMod;
     finalChance = Math.max(5, Math.min(95, finalChance));
     
     let win1 = (Math.random() * 100) < finalChance;
 
-    // 4. СИМУЛЯЦИЯ СОБЫТИЙ РАУНДА (Цвета ников)
+    // 4. СИМУЛЯЦИЯ СОБЫТИЙ РАУНДА 
     let roundEvents = [];
     let alive1 = [...t1.players];
     let alive2 = [...t2.players];
@@ -1287,11 +1325,9 @@ function conductUltraRound(t1, t2, mObj, state) {
     let roundEarnedM1 = 0;
     let roundEarnedM2 = 0;
 
-    // Цвета команд (Оранжевый для T, Голубой для CT)
     const tColor = "var(--t-color)";
     const ctColor = "var(--ct-color)";
     
-    // Генерация фрагов
     let totalKills = deaths1 + deaths2;
     for(let i=0; i<totalKills; i++) {
         let team1Kills = deaths2 > 0;
@@ -1311,7 +1347,8 @@ function conductUltraRound(t1, t2, mObj, state) {
             let victim = alive2[victimIdx] || t2.players[0];
             if(alive2.length > 0) alive2.splice(victimIdx, 1);
             
-            let weapon = getWeaponForRole(killer.role, buy1.type, t1IsT);
+            // 5.6.0 Берем оружие прямо из инвентаря игрока
+            let weapon = state.pInv.t1[killer.nick].weapon || getWeaponForRole(killer.role, buy1.type, t1IsT);
             let hsEvent = Math.random() > 0.5 ? " 🎯" : ""; 
             
             let kColor = t1IsT ? tColor : ctColor;
@@ -1319,13 +1356,11 @@ function conductUltraRound(t1, t2, mObj, state) {
             
             roundEvents.push(`<div class="event-line"><span class="event-kill" style="color:${kColor}">${killer.nick}</span> <span class="weapon-icon">${weapon}</span> убил <span style="color:${vColor}">${victim.nick}</span>${hsEvent}</div>`);
             
-            // Stats Update
             if(killer) {
                 state.pStats.t1[killer.nick].k++;
                 if(hsEvent !== "") state.pStats.t1[killer.nick].hs++;
                 state.pStats.t1[killer.nick].dmg += Math.floor(Math.random() * 50 + 80);
                 
-                // Assists
                 if(alive1.length > 1 && Math.random() > 0.6) {
                     let ast = alive1[Math.floor(Math.random() * alive1.length)];
                     if(ast.nick !== killer.nick) {
@@ -1344,7 +1379,8 @@ function conductUltraRound(t1, t2, mObj, state) {
             let victim = alive1[victimIdx] || t1.players[0];
             if(alive1.length > 0) alive1.splice(victimIdx, 1);
             
-            let weapon = getWeaponForRole(killer.role, buy2.type, !t1IsT);
+            // 5.6.0 Из инвентаря
+            let weapon = state.pInv.t2[killer.nick].weapon || getWeaponForRole(killer.role, buy2.type, !t1IsT);
             let hsEvent = Math.random() > 0.5 ? " 🎯" : "";
             
             let kColor = t2IsT ? tColor : ctColor;
@@ -1352,13 +1388,11 @@ function conductUltraRound(t1, t2, mObj, state) {
 
             roundEvents.push(`<div class="event-line"><span class="event-kill" style="color:${kColor}">${killer.nick}</span> <span class="weapon-icon">${weapon}</span> убил <span style="color:${vColor}">${victim.nick}</span>${hsEvent}</div>`);
             
-            // Stats Update
             if(killer) {
                 state.pStats.t2[killer.nick].k++;
                 if(hsEvent !== "") state.pStats.t2[killer.nick].hs++;
                 state.pStats.t2[killer.nick].dmg += Math.floor(Math.random() * 50 + 80);
                 
-                // Assists
                 if(alive2.length > 1 && Math.random() > 0.6) {
                     let ast = alive2[Math.floor(Math.random() * alive2.length)];
                     if(ast.nick !== killer.nick) {
@@ -1372,7 +1406,6 @@ function conductUltraRound(t1, t2, mObj, state) {
         }
     }
 
-    // Логика бомбы 
     if (isBombPlant) {
         let planterTeam = t1IsT ? t1 : t2;
         let planterTeamObj = t1IsT ? state.pStats.t1 : state.pStats.t2;
@@ -1398,8 +1431,38 @@ function conductUltraRound(t1, t2, mObj, state) {
         }
     }
 
-    // 5. НАЧИСЛЕНИЕ ДЕНЕГ ЗА ИСХОД (CS2 Командный пул x5)
-    const winMoney = 16250; // 3250 * 5
+    // === 4.5. СОХРАНЕНИЕ ИНВЕНТАРЯ ВЫЖИВШИХ (5.6.0) ===
+    let surv1Text = alive1.map(p => {
+        let w = state.pInv.t1[p.nick].weapon || "Пистолет";
+        let a = state.pInv.t1[p.nick].armor ? "🛡️" : "";
+        let n = state.pInv.t1[p.nick].nades ? "💣" : "";
+        // Шанс потратить гранаты в раунде
+        if (state.pInv.t1[p.nick].nades && Math.random() > 0.5) state.pInv.t1[p.nick].nades = false; 
+        return `<span style="color:${t1IsT ? tColor : ctColor}">${p.nick}</span> <span style="font-size:10px; opacity:0.8">[${w} ${a}${n}]</span>`;
+    }).join(", ");
+    
+    let surv2Text = alive2.map(p => {
+        let w = state.pInv.t2[p.nick].weapon || "Пистолет";
+        let a = state.pInv.t2[p.nick].armor ? "🛡️" : "";
+        let n = state.pInv.t2[p.nick].nades ? "💣" : "";
+        if (state.pInv.t2[p.nick].nades && Math.random() > 0.5) state.pInv.t2[p.nick].nades = false; 
+        return `<span style="color:${t2IsT ? tColor : ctColor}">${p.nick}</span> <span style="font-size:10px; opacity:0.8">[${w} ${a}${n}]</span>`;
+    }).join(", ");
+
+    // Очищаем инвентарь мертвых
+    t1.players.forEach(p => { if(!alive1.includes(p)) state.pInv.t1[p.nick] = {weapon: null, armor: false, nades: false}; });
+    t2.players.forEach(p => { if(!alive2.includes(p)) state.pInv.t2[p.nick] = {weapon: null, armor: false, nades: false}; });
+
+    let surviveLogHtml = `
+    <div style="background: rgba(255,255,255,0.02); padding: 8px 15px; border-radius: 8px; margin-top: 8px; font-size: 11px; border-left: 3px solid #888;">
+        <b>Выжили и сохранили экипировку:</b><br>
+        ${t1.name}: ${surv1Text || "<i>Все погибли</i>"}<br>
+        ${t2.name}: ${surv2Text || "<i>Все погибли</i>"}
+    </div>`;
+    roundEvents.push(surviveLogHtml);
+
+    // 5. НАЧИСЛЕНИЕ ДЕНЕГ ЗА ИСХОД
+    const winMoney = 16250; 
     const getLossMoney = (streak) => (1400 + (Math.min(streak, 4) * 500)) * 5;
     
     let totalEarned1 = roundEarnedM1;
@@ -1430,7 +1493,6 @@ function conductUltraRound(t1, t2, mObj, state) {
     state.m1 = Math.min(state.m1, 80000); 
     state.m2 = Math.min(state.m2, 80000);
 
-    // Добавляем лог расчета шансов для обеих команд (Задача 5.4.1)
     let chanceLogHtml = `
     <div style="background: rgba(255,255,255,0.03); padding: 10px 15px; border-radius: 8px; margin-bottom: 12px; font-size: 11px; border-left: 3px solid #4a90e2;">
         <b style="color:var(--info)">РАСЧЕТ ШАНСОВ ПЕРЕД РАУНДОМ:</b><br>
@@ -1442,14 +1504,13 @@ function conductUltraRound(t1, t2, mObj, state) {
     
     roundEvents.unshift(chanceLogHtml);
 
-    // Добавляем лог заработка
     let incomeLogHtml = `
     <div style="background: rgba(0,255,65,0.03); padding: 8px 15px; border-radius: 8px; margin-top: 12px; font-size: 11px; border-left: 3px solid #00ff41; color:#a0a0a0;">
         <b>Доход по итогам раунда:</b> ${t1.name} <span style="color:var(--accent)">+$${totalEarned1}</span> | ${t2.name} <span style="color:var(--accent)">+$${totalEarned2}</span>
     </div>`;
     roundEvents.push(incomeLogHtml);
 
-    // 6. СОХРАНЕНИЕ В ИСТОРИЮ (Расширенный UI с точными шансами 5.4.1)
+    // 6. СОХРАНЕНИЕ В ИСТОРИЮ 
     let ecoLabel1 = `<span class="economy-label ${buy1.type.toLowerCase()}-tag">${buy1.type}</span>`;
     let ecoLabel2 = `<span class="economy-label ${buy2.type.toLowerCase()}-tag">${buy2.type}</span>`;
     
@@ -1475,7 +1536,7 @@ function conductUltraRound(t1, t2, mObj, state) {
     
     state.h.push(htmlBlock);
     
-    // Смена сторон (Сброс экономики)
+    // Смена сторон (Сброс экономики и инвентаря)
     if (state.r === 11 || (state.r >= 23 && (state.r - 23) % 3 === 0)) {
         state.h.push(`<div style="text-align:center; padding: 15px; color:var(--accent); font-weight:bold; font-size:13px; letter-spacing:3px; background:rgba(0,255,65,0.05); border-radius:8px; margin: 15px 0; border: 1px dashed var(--accent);">--- СМЕНА СТОРОН ---</div>`);
         if(state.r === 11) { 
@@ -1484,6 +1545,9 @@ function conductUltraRound(t1, t2, mObj, state) {
             state.l1 = 0; 
             state.l2 = 0; 
         }
+        // 5.6.0: Сброс сохраненного оружия при смене сторон
+        t1.players.forEach(p => { state.pInv.t1[p.nick] = { weapon: null, armor: false, nades: false }; });
+        t2.players.forEach(p => { state.pInv.t2[p.nick] = { weapon: null, armor: false, nades: false }; });
     }
     
     state.r++;
@@ -1509,7 +1573,6 @@ function renderActiveMatch() {
     if(currentLiveMapState && currentLiveMapState.h.length > 0) {
         liveFeed.style.display = "flex";
         liveFeed.innerHTML = currentLiveMapState.h.join("");
-        // Автоскролл к последнему раунду
         liveFeed.scrollTop = liveFeed.scrollHeight;
     } else {
         liveFeed.style.display = "none";
@@ -1648,7 +1711,6 @@ function renderHistory() {
         
         (m.details || []).forEach(d => {
             if(d.pStats) {
-                // Агрегация статы Команды 1
                 Object.keys(d.pStats.t1 || {}).forEach(nick => {
                     if(!ovr[nick]) ovr[nick] = { k:0, a:0, d:0, dmg:0, plants:0, defuses:0, t:m.t1 };
                     let st = d.pStats.t1[nick];
@@ -1660,7 +1722,6 @@ function renderHistory() {
                     ovr[nick].defuses += st.defuses;
                 });
                 
-                // Агрегация статы Команды 2
                 Object.keys(d.pStats.t2 || {}).forEach(nick => {
                     if(!ovr[nick]) ovr[nick] = { k:0, a:0, d:0, dmg:0, plants:0, defuses:0, t:m.t2 };
                     let st = d.pStats.t2[nick];
@@ -1674,7 +1735,6 @@ function renderHistory() {
             }
         });
         
-        // Вычисление оценки (Score) для MVP
         Object.keys(ovr).forEach(nick => {
             let st = ovr[nick];
             let kd = st.d > 0 ? (st.k / st.d) : st.k;
@@ -1733,3 +1793,4 @@ checkState();
 </script>
 </body>
 </html>
+ 
