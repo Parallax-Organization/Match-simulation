@@ -1384,53 +1384,40 @@ function conductUltraRound(t1, t2, mObj, state) {
     let totalEarned1 = roundEarnedM1;
     let totalEarned2 = roundEarnedM2;
 
-    // 5.8.0 Fix: Детализация выигрышей и луз-стриков
-    const LIMIT = 10.0;
+    // 5.8.1 Fix: Детализация выигрышей и луз-стриков
+        const LIMIT = 10.0;
 
-if(win1) {
-    state.r1++; state.l1 = 0; state.l2++;
-    state.streak1++; state.streak2 = 0; 
-    
-    // Считаем прибавку для победителя
-    let gain = 0;
-    if (state.streak1 === 1) gain = 1.5;
-    else if (state.streak1 === 2) gain = 1.0;
-    else if (state.streak1 >= 3) gain = 0.5;
-    
-    state.morale1 = Math.min(state.morale1 + gain, LIMIT);
-    state.morale2 = 0; // Проигравшие теряют кураж
-    state.lastWin = 1;
-    // ... остальной код экономики
-} else {
-    state.r2++; state.l2 = 0; state.l1++;
-    state.streak2++; state.streak1 = 0;
-    
-    let gain = 0;
-    if (state.streak2 === 1) gain = 1.5;
-    else if (state.streak2 === 2) gain = 1.0;
-    else if (state.streak2 >= 3) gain = 0.5;
-    
-    state.morale2 = Math.min(state.morale2 + gain, LIMIT);
-    state.morale1 = 0; // Проигравшие теряют кураж
-    state.lastWin = 2;
-    // ... остальной код экономики
-}
-    
+    if(win1) {
+        state.r1++; state.l1 = 0; state.l2++;
+        state.streak1++; state.streak2 = 0; 
         
-        // Взрыв (T) или Дефьюз (CT) дают больше, чем Elimination
+        // 1. Считаем мораль
+        let gain = (state.streak1 === 1) ? 1.5 : (state.streak1 === 2) ? 1.0 : 0.5;
+        state.morale1 = Math.min((state.morale1 || 0) + gain, LIMIT);
+        state.morale2 = 0; 
+        state.lastWin = 1;
+
+        // 2. Считаем деньги (Экономика)
         let winBonus1 = ((isBombPlant && t1IsT) || (isDefuse && !t1IsT)) ? 17500 : 16250;
         totalEarned1 += winBonus1; 
         
         let lossBonus2 = getLossMoney(state.l2 - 1);
-        // Если Террористы проиграли, но ставили бомбу, им бонус +$4000
-        if (isBombPlant && t2IsT) lossBonus2 += 4000;
+        if (isBombPlant && t2IsT) lossBonus2 += 4000; // Бонус Т за поставленную бомбу
         
         totalEarned2 += lossBonus2;
         state.m1 += totalEarned1; state.m2 += totalEarned2;
+
     } else {
         state.r2++; state.l2 = 0; state.l1++;
-        state.streak2++; state.streak1 = 0; state.lastWin = 2;
+        state.streak2++; state.streak1 = 0;
         
+        // 1. Считаем мораль
+        let gain = (state.streak2 === 1) ? 1.5 : (state.streak2 === 2) ? 1.0 : 0.5;
+        state.morale2 = Math.min((state.morale2 || 0) + gain, LIMIT);
+        state.morale1 = 0; 
+        state.lastWin = 2;
+
+        // 2. Считаем деньги (Экономика)
         let winBonus2 = ((isBombPlant && t2IsT) || (isDefuse && !t2IsT)) ? 17500 : 16250;
         totalEarned2 += winBonus2; 
         
@@ -1441,9 +1428,11 @@ if(win1) {
         state.m2 += totalEarned2; state.m1 += totalEarned1;
     }
 
+    // Ограничение максимального банка
     state.m1 = Math.min(state.m1, 80000); 
     state.m2 = Math.min(state.m2, 80000);
-
+    
+    
     let chanceLogHtml = `
     <div style="background: rgba(255,255,255,0.03); padding: 10px 15px; border-radius: 8px; margin-bottom: 12px; font-size: 11px; border-left: 3px solid #4a90e2;">
         <b style="color:var(--info)">РАСЧЕТ ШАНСОВ ПЕРЕД РАУНДОМ:</b><br>
