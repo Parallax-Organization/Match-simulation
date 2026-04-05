@@ -1218,9 +1218,13 @@ function conductUltraRound(t1, t2, mObj, state) {
     });
 
     // 3. РАСЧЕТ ШАНСОВ (Математика по Firepower 5.8.0 + Morale)
-    let p1 = calculateTeamPower(t1);
-    let p2 = calculateTeamPower(t2);
-    let baseChance = (p1 / (p1 + p2)) * 100;
+    // Добавь это в блок инициализации:
+    state.morale1 = state.morale1 || 0; // Накопленный бонус команды 1
+    state.morale2 = state.morale2 || 0; // Накопленный бонус команды 2
+    // НОВЫЙ РАСЧЕТ МОРАЛИ:
+    let moraleMod = state.morale1 - state.morale2;
+    
+    
     
     let sideChanceMod = 0;
     let sideStrong = MAP_DATA[mObj.name].side;
