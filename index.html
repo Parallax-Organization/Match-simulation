@@ -4,9 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="Esports Manager Pro - Advanced Match Simulation System">
-<meta name="version" content="5.4.2">
+<meta name="version" content="5.5.0">
 <meta name="author" content="Gemini AI Collaboration">
-<title>MATCH SIMULATION v5.4.2 PRO</title>
+<title>MATCH SIMULATION v5.5.0 PRO</title>
 
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
@@ -539,7 +539,7 @@
 <div class="container">
     <div id="authSection">
         <h1>MATCH SIMULATION</h1>
-        <div class="sub-title">VERSION 5.4.2 PRO</div>
+        <div class="sub-title">VERSION 5.5.0 PRO</div>
         
         <div class="changelog-container">
             <div class="changelog-header">
@@ -650,8 +650,14 @@
 
 <script>
 /* ========================================================================
-   ULTRA ENGINE JAVASCRIPT - v5.4.2 PRO
+   ULTRA ENGINE JAVASCRIPT - v5.5.0 PRO
    ======================================================================== */
+
+// FIX 5.5.0: Глобальная функция очистки от запрещенных символов базы данных
+function cleanName(name) {
+    if (!name) return "";
+    return name.replace(/[.#$\[\]\/]/g, "").trim();
+}
 
 // Firebase Initialization
 const firebaseConfig = {
@@ -677,9 +683,10 @@ const MAP_DATA = {
 };
 const MAP_POOL = Object.keys(MAP_DATA);
 
-// FULL CHANGELOG RESTORED + NEW UPDATES 5.4.2
+// FULL CHANGELOG RESTORED + NEW UPDATES 5.5.0
 // Соблюдение правила сохранения всей истории обновлений
 const UPDATES = [
+    { v: "5.5.0", items: ["Реалистичная экономика CS2: команды теперь чаще уходят в ECO (сохранение средств) для гарантированного FULL закупа, избегая постоянной 'петли форс-баев'. Алгоритм учитывает луз-стрик и ожидаемый доход.", "Анти-баг система никнеймов: автоматическая очистка ников от запрещенных символов Firebase (#, [, ], ., $, /), из-за которых не запускались матчи.", "Умный закуп в конце половины: в 12-м и 24-м раундах команды всегда закупаются на все доступные деньги."] },
     { v: "5.4.2", items: ["HOTFIX: Исправлен критический баг, из-за которого симуляция матча не запускалась. Проблема возникала из-за конвертации массивов игроков в объекты базой данных Firebase при переносе команд или удалении игроков (Sparse Arrays).", "Оптимизирована стабильность: теперь массивы команд и игроков строго нормализуются (через Object.values) перед каждым раундом и расчетом силы."] },
     { v: "5.4.1", items: ["Исправлен баг с уходом экономики в минус: теперь команда не может закупиться на сумму больше, чем у нее есть на балансе.", "Полностью переработана экономика овертаймов: теперь в начале каждых 3 раундов (полупериод) командам выдается стартовый капитал $10,000 на игрока ($50,000 на команду), который переносится между раундами реалистично.", "В детализации раунда (сводке перед раундом) шанс на победу теперь отображается для обеих команд.", "В кратком логе (Timeline) шансы больше не округляются до целых чисел, а показывают десятые доли процента (например, 51.2% vs 48.8%).", "Глобальное сохранение ростеров: при создании нового турнира, система автоматически перенесет в него все команды из вашего самого большого предыдущего турнира."] },
     { v: "5.4.0", items: ["Новая система расчета Match MVP (теперь учитываются Kills, Assists, Plants, Defuses, ADR и K/D для точности).", "Цветовая индикация игроков в логах раундов: Оранжевый для T, Голубой для CT (динамическая смена при смене сторон).", "Изменена система силы: теперь сила задается всей команде сразу при создании. Игроки больше не требуют ввода силы вручную.", "Детализация экономики: теперь в истории раунда отображается бюджет команд до закупа и после, а также доход за текущий раунд.", "Реалистичная экономика: скорректированы пороги ECO/Force (теперь чаще играют ECO), на допах команды всегда имеют максимум денег и играют FULL.", "Детализация расчёта шансов: в логе каждого раунда теперь выводится сводка того, из чего складывается шанс на победу (База + Сторона + Экономика)."] },
@@ -957,7 +964,8 @@ function savePlayer() {
     
     if(t.players.length >= 5) return alert("В команде может быть только 5 игроков.");
     
-    const nick = document.getElementById("pNick").value;
+    // FIX 5.5.0: Очищаем ник от запрещенных для БД символов перед сохранением
+    const nick = cleanName(document.getElementById("pNick").value);
     const role = document.getElementById("pRole").value;
     
     if(nick) {
@@ -968,7 +976,7 @@ function savePlayer() {
         document.getElementById("pNick").value = "";
         renderPlayers();
     } else {
-        alert("Введите ник игрока");
+        alert("Введите корректный ник игрока (без спецсимволов #, [, ], ., $, /)");
     }
 }
 
@@ -1086,7 +1094,7 @@ function startVeto() {
     renderActiveMatch();
 }
 
-// --- VERSION 5.4.2: ADVANCED CS2 ROUND SIMULATION ENGINE ---
+// --- VERSION 5.5.0: ADVANCED CS2 ROUND SIMULATION ENGINE ---
 // Вспомогательные функции для расчета киллов и оружия
 function getWeaponForRole(role, ecoType, isT) {
     if (ecoType === "PISTOL") return isT ? "Glock-18" : "USP-S";
@@ -1158,26 +1166,55 @@ function conductUltraRound(t1, t2, mObj, state) {
         }
     }
 
-    // 2. РАСЧЕТ ЭКОНОМИКИ (Реалистичные пороги с учетом баланса 5.4.1)
-    const calculateTeamBuy = (money, isPistol, isOT) => {
+    // 2. РАСЧЕТ ЭКОНОМИКИ (Реалистичные пороги с учетом баланса 5.5.0)
+    const calculateTeamBuy = (money, isPistol, isOT, lossStreak, currentRound) => {
         if(isOT) {
             let cost = Math.min(money, 23500);
             return { type: cost >= 20000 ? "FULL" : "FORCE", cost: cost, mult: 1.0 };
         }
         if(isPistol) return { type: "PISTOL", cost: Math.min(money, 1500), mult: 0.5 };
         
-        // Исправлен баг минусовой экономики: теперь закупается не больше, чем есть денег.
-        if(money >= 23500) return { type: "FULL", cost: 23500, mult: 1.0 };
-        if(money >= 20000) return { type: "FULL", cost: money, mult: 1.0 };
-        if(money >= 12000) return { type: "FORCE", cost: money, mult: 0.75 };
-        return { type: "ECO", cost: Math.min(money, 2000), mult: 0.45 };
+        // FIX 5.5.0: Последний раунд половины (12-й или 24-й, индекс 11 или 23) - тратим всё
+        if (currentRound === 11 || currentRound === 23) {
+            if (money >= 19500) return { type: "FULL", cost: money, mult: 1.0 };
+            return { type: "FORCE", cost: money, mult: 0.75 };
+        }
+
+        // Порог FULL закупа CS2 (~$19,500 - $23,500 на команду)
+        if(money >= 19500) return { type: "FULL", cost: 19500 + Math.min(money - 19500, 4000), mult: 1.0 };
+        
+        // FIX 5.5.0: Интеллектуальный расчет ECO/FORCE
+        // Расчет ожидаемого дохода при поражении в этом раунде
+        let expectedLossIncome = (1400 + (Math.min(lossStreak || 0, 4) * 500)) * 5;
+        
+        // Сколько мы можем потратить сейчас, чтобы в следующем раунде было ~$20,000 (FULL)
+        let maxSpendToKeepFull = (money + expectedLossIncome) - 20000;
+
+        // Если денег совсем мало, делаем жесткое ECO (тратим до $1500-2000 на команду)
+        if (maxSpendToKeepFull <= 2000) {
+            return { type: "ECO", cost: Math.min(money, 1500), mult: 0.45 };
+        }
+        
+        // Если можем позволить себе FORCE и при этом выйти на FULL в следующем - делаем
+        if (maxSpendToKeepFull > 7000) {
+            return { type: "FORCE", cost: Math.min(money, maxSpendToKeepFull), mult: 0.75 };
+        }
+        
+        // Небольшой шанс рискнуть (агрессивный FORCE), если денег среднее количество (~$14k+)
+        if (money >= 14000 && Math.random() > 0.8) {
+            return { type: "FORCE", cost: money, mult: 0.75 };
+        }
+
+        // По умолчанию - сейвим (ECO), тратим только "лишние" деньги до порога сохранения
+        return { type: "ECO", cost: Math.min(money, Math.max(1500, maxSpendToKeepFull)), mult: 0.45 };
     };
 
     let m1_start = state.m1;
     let m2_start = state.m2;
 
-    let buy1 = calculateTeamBuy(state.m1, isPistol, isOT);
-    let buy2 = calculateTeamBuy(state.m2, isPistol, isOT);
+    // FIX 5.5.0: Добавлены стрик и текущий раунд для умного закупа
+    let buy1 = calculateTeamBuy(state.m1, isPistol, isOT, state.l1, state.r);
+    let buy2 = calculateTeamBuy(state.m2, isPistol, isOT, state.l2, state.r);
 
     state.m1 -= buy1.cost;
     state.m2 -= buy2.cost;
@@ -1696,4 +1733,3 @@ checkState();
 </script>
 </body>
 </html>
-
