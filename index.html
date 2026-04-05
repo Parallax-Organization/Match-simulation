@@ -4,9 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="Esports Manager Pro - Advanced Match Simulation System">
-<meta name="version" content="5.4.1">
+<meta name="version" content="5.4.2">
 <meta name="author" content="Gemini AI Collaboration">
-<title>MATCH SIMULATION v5.4.1 PRO</title>
+<title>MATCH SIMULATION v5.4.2 PRO</title>
 
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
@@ -539,7 +539,7 @@
 <div class="container">
     <div id="authSection">
         <h1>MATCH SIMULATION</h1>
-        <div class="sub-title">VERSION 5.4.1 PRO</div>
+        <div class="sub-title">VERSION 5.4.2 PRO</div>
         
         <div class="changelog-container">
             <div class="changelog-header">
@@ -649,7 +649,7 @@
 
 <script>
 /* ========================================================================
-   ULTRA ENGINE JAVASCRIPT - v5.4.1 PRO
+   ULTRA ENGINE JAVASCRIPT - v5.4.2 PRO
    ======================================================================== */
 
 // Firebase Initialization
@@ -676,9 +676,10 @@ const MAP_DATA = {
 };
 const MAP_POOL = Object.keys(MAP_DATA);
 
-// FULL CHANGELOG RESTORED + NEW UPDATES 5.4.1
+// FULL CHANGELOG RESTORED + NEW UPDATES 5.4.2
 // Соблюдение правила сохранения всей истории обновлений
 const UPDATES = [
+    { v: "5.4.2", items: ["HOTFIX: Исправлен критический баг, из-за которого симуляция матча не запускалась. Проблема возникала из-за конвертации массивов игроков в объекты базой данных Firebase при переносе команд или удалении игроков (Sparse Arrays).", "Оптимизирована стабильность: теперь массивы команд и игроков строго нормализуются (через Object.values) перед каждым раундом и расчетом силы."] },
     { v: "5.4.1", items: ["Исправлен баг с уходом экономики в минус: теперь команда не может закупиться на сумму больше, чем у нее есть на балансе.", "Полностью переработана экономика овертаймов: теперь в начале каждых 3 раундов (полупериод) командам выдается стартовый капитал $10,000 на игрока ($50,000 на команду), который переносится между раундами реалистично.", "В детализации раунда (сводке перед раундом) шанс на победу теперь отображается для обеих команд.", "В кратком логе (Timeline) шансы больше не округляются до целых чисел, а показывают десятые доли процента (например, 51.2% vs 48.8%).", "Глобальное сохранение ростеров: при создании нового турнира, система автоматически перенесет в него все команды из вашего самого большого предыдущего турнира."] },
     { v: "5.4.0", items: ["Новая система расчета Match MVP (теперь учитываются Kills, Assists, Plants, Defuses, ADR и K/D для точности).", "Цветовая индикация игроков в логах раундов: Оранжевый для T, Голубой для CT (динамическая смена при смене сторон).", "Изменена система силы: теперь сила задается всей команде сразу при создании. Игроки больше не требуют ввода силы вручную.", "Детализация экономики: теперь в истории раунда отображается бюджет команд до закупа и после, а также доход за текущий раунд.", "Реалистичная экономика: скорректированы пороги ECO/Force (теперь чаще играют ECO), на допах команды всегда имеют максимум денег и играют FULL.", "Детализация расчёта шансов: в логе каждого раунда теперь выводится сводка того, из чего складывается шанс на победу (База + Сторона + Экономика)."] },
     { v: "5.3.0", items: ["Новая продвинутая статистика игроков (Kills, Assists, Deaths, K/D, ADR, HS%, Plants, Defuses).", "Игроки в статистике теперь сортируются от лучшего к худшему по количеству фрагов.", "Добавлен Match MVP (Самый ценный игрок по итогам всех карт матча).", "Обновлена логика выживаемости: теперь при взрыве бомбы (T) или обезвреживании (CT) часть проигравшей команды может спастись, а не умирать в полном составе.", "Экономика улучшена: пороги Eco скорректированы (<$8000), чтобы Eco раунды стали реалистичными и происходили чаще после сброса экономики.", "Отключено влияние Капитана на общие шансы команды по просьбе пользователя.", "Восстановлена функция полного удаления турниров (кнопка крестик) для администраторов.", "Архивированные турниры теперь корректно сортируются: самые последние завершенные ивенты выводятся первыми в архиве."] },
@@ -768,7 +769,7 @@ function checkState() {
     }
 }
 
-// --- TOURNAMENT MANAGEMENT (UPDATED 5.3.0/5.4.1) ---
+// --- TOURNAMENT MANAGEMENT (UPDATED 5.3.0/5.4.1/5.4.2) ---
 function loadTournaments() {
     db.ref("tournaments").on("value", s => {
         const val = s.val() || {};
@@ -836,7 +837,7 @@ function deleteTourney(id) {
     }
 }
 
-// --- TEAM & PLAYER ENGINE 5.4.1 ---
+// --- TEAM & PLAYER ENGINE 5.4.2 ---
 function loadTourneyData() {
     db.ref("tournaments/" + currentTourneyId).on("value", s => {
         const t = s.val(); 
@@ -845,7 +846,16 @@ function loadTourneyData() {
     });
     
     db.ref("teams/" + currentTourneyId).on("value", s => { 
-        teams = s.val() || []; 
+        let rawTeams = s.val() || [];
+        // FIX 5.4.2: Строгая нормализация массивов Firebase, чтобы избежать краша (Sparse Arrays)
+        teams = (Array.isArray(rawTeams) ? rawTeams : Object.values(rawTeams)).map(t => {
+            if (t) {
+                // Если players загрузился как объект {0: {...}, 2: {...}}, превращаем обратно в плотный массив
+                t.players = Array.isArray(t.players) ? t.players : Object.values(t.players || {});
+            }
+            return t;
+        }).filter(t => t); // Удаляем возможные null элементы
+
         updateSelectors(); 
     });
     
@@ -862,7 +872,7 @@ function updateSelectors() {
             <div class="team-item" onclick="openPlayerEditor(${i})">
                 <span>
                     <b>${t.name}</b> 
-                    <small style="color:var(--info)">[Players: ${(t.players||[]).length}/5 | Power: ${calculateTeamPower(t)}]</small>
+                    <small style="color:var(--info)">[Players: ${(Array.isArray(t.players) ? t.players : Object.values(t.players || {})).length}/5 | Power: ${calculateTeamPower(t)}]</small>
                 </span>
                 <b onclick="event.stopPropagation(); deleteTeam(${i})" style="color:var(--danger); font-size:18px;">×</b>
             </div>`).join("");
@@ -926,8 +936,10 @@ function renderPlayers() {
     const t = teams[editingTeamIdx];
     const list = document.getElementById("playerList");
     
-    // В 5.4.1 больше не показывается индивидуальная сила игрока
-    list.innerHTML = (t.players || []).map((p, i) => `
+    // FIX 5.4.2: Безопасное чтение ростера
+    let pArr = Array.isArray(t.players) ? t.players : Object.values(t.players || {});
+    
+    list.innerHTML = pArr.map((p, i) => `
         <div class="player-row" style="background:rgba(255,255,255,0.05); padding:5px 15px; border-radius:8px;">
             <div style="font-weight:bold; font-size: 14px;">${p.nick}</div>
             <div style="color:var(--info); font-size:12px;">${p.role}</div>
@@ -938,7 +950,9 @@ function renderPlayers() {
 
 function savePlayer() {
     const t = teams[editingTeamIdx];
-    if(!t.players) t.players = [];
+    // FIX 5.4.2: Превентивная нормализация
+    t.players = Array.isArray(t.players) ? t.players : Object.values(t.players || {});
+    
     if(t.players.length >= 5) return alert("В команде может быть только 5 игроков.");
     
     const nick = document.getElementById("pNick").value;
@@ -957,17 +971,19 @@ function savePlayer() {
 }
 
 function removePlayer(idx) {
+    // FIX 5.4.2: Нормализация перед удалением
+    teams[editingTeamIdx].players = Array.isArray(teams[editingTeamIdx].players) ? teams[editingTeamIdx].players : Object.values(teams[editingTeamIdx].players || {});
     teams[editingTeamIdx].players.splice(idx, 1);
     db.ref("teams/" + currentTourneyId).set(teams);
     renderPlayers();
 }
 
 function calculateTeamPower(team) {
-    // В 5.4.1 возвращаем сохраненную силу команды напрямую, игнорируя силу игроков
-    // Старая логика (reduce) оставлена только как fallback для старых команд без team.power
     if (team.power !== undefined && team.power > 0) return team.power;
-    if (!team.players || team.players.length === 0) return 0;
-    return team.players.reduce((sum, p) => sum + (p.power || 0), 0);
+    // FIX 5.4.2: Безопасное получение массива для старых команд
+    let pArr = Array.isArray(team.players) ? team.players : Object.values(team.players || {});
+    if (pArr.length === 0) return 0;
+    return pArr.reduce((sum, p) => sum + (p.power || 0), 0);
 }
 
 // --- VETO ENGINE ---
@@ -1068,7 +1084,7 @@ function startVeto() {
     renderActiveMatch();
 }
 
-// --- VERSION 5.4.1: ADVANCED CS2 ROUND SIMULATION ENGINE ---
+// --- VERSION 5.4.2: ADVANCED CS2 ROUND SIMULATION ENGINE ---
 // Вспомогательные функции для расчета киллов и оружия
 function getWeaponForRole(role, ecoType, isT) {
     if (ecoType === "PISTOL") return isT ? "Glock-18" : "USP-S";
@@ -1105,11 +1121,15 @@ function selectPlayerWeighted(playersArr) {
 }
 
 function conductUltraRound(t1, t2, mObj, state) {
+    // FIX 5.4.2: Дополнительная гарантия того, что массивы не стали объектами при загрузке старых данных в стейт матча
+    t1.players = Array.isArray(t1.players) ? t1.players : Object.values(t1.players || {});
+    t2.players = Array.isArray(t2.players) ? t2.players : Object.values(t2.players || {});
+
     // 1. Инициализация индивидуальной статистики
     if (!state.pStats) {
         state.pStats = { t1: {}, t2: {} };
-        (t1.players || []).forEach(p => state.pStats.t1[p.nick] = { role: p.role, k: 0, a: 0, d: 0, dmg: 0, hs: 0, plants: 0, defuses: 0 });
-        (t2.players || []).forEach(p => state.pStats.t2[p.nick] = { role: p.role, k: 0, a: 0, d: 0, dmg: 0, hs: 0, plants: 0, defuses: 0 });
+        t1.players.forEach(p => state.pStats.t1[p.nick] = { role: p.role, k: 0, a: 0, d: 0, dmg: 0, hs: 0, plants: 0, defuses: 0 });
+        t2.players.forEach(p => state.pStats.t2[p.nick] = { role: p.role, k: 0, a: 0, d: 0, dmg: 0, hs: 0, plants: 0, defuses: 0 });
     }
 
     // Определяем сторону команд (T или CT)
@@ -1201,8 +1221,8 @@ function conductUltraRound(t1, t2, mObj, state) {
 
     // 4. СИМУЛЯЦИЯ СОБЫТИЙ РАУНДА (Цвета ников)
     let roundEvents = [];
-    let alive1 = [...(t1.players || [])];
-    let alive2 = [...(t2.players || [])];
+    let alive1 = [...t1.players];
+    let alive2 = [...t2.players];
     
     let winnerDeaths = Math.floor(Math.random() * 5);
     let loserDeaths = 5; 
@@ -1247,9 +1267,9 @@ function conductUltraRound(t1, t2, mObj, state) {
 
         if (t1GetsKill) {
             deaths2--;
-            let killer = selectPlayerWeighted(t1.players || []);
+            let killer = selectPlayerWeighted(t1.players);
             let victimIdx = Math.floor(Math.random() * alive2.length);
-            let victim = alive2[victimIdx] || (t2.players||[])[0];
+            let victim = alive2[victimIdx] || t2.players[0];
             if(alive2.length > 0) alive2.splice(victimIdx, 1);
             
             let weapon = getWeaponForRole(killer.role, buy1.type, t1IsT);
@@ -1280,9 +1300,9 @@ function conductUltraRound(t1, t2, mObj, state) {
 
         } else {
             deaths1--;
-            let killer = selectPlayerWeighted(t2.players || []);
+            let killer = selectPlayerWeighted(t2.players);
             let victimIdx = Math.floor(Math.random() * alive1.length);
-            let victim = alive1[victimIdx] || (t1.players||[])[0];
+            let victim = alive1[victimIdx] || t1.players[0];
             if(alive1.length > 0) alive1.splice(victimIdx, 1);
             
             let weapon = getWeaponForRole(killer.role, buy2.type, !t1IsT);
@@ -1318,7 +1338,7 @@ function conductUltraRound(t1, t2, mObj, state) {
         let planterTeam = t1IsT ? t1 : t2;
         let planterTeamObj = t1IsT ? state.pStats.t1 : state.pStats.t2;
         let planterColor = t1IsT ? (t1IsT ? tColor : ctColor) : (t2IsT ? tColor : ctColor); 
-        let planter = selectPlayerWeighted(planterTeam.players || []);
+        let planter = selectPlayerWeighted(planterTeam.players);
         
         roundEvents.splice(Math.floor(roundEvents.length/2), 0, `<div class="event-line event-bomb">🧨 <span style="color:${planterColor}">${planter.nick}</span> установил бомбу</div>`);
         
@@ -1330,7 +1350,7 @@ function conductUltraRound(t1, t2, mObj, state) {
             let defuserTeamObj = t1IsT ? state.pStats.t2 : state.pStats.t1;
             let defuserColor = t1IsT ? (t2IsT ? tColor : ctColor) : (t1IsT ? tColor : ctColor); 
             let defuserAlive = t1IsT ? alive2 : alive1;
-            let defuser = defuserAlive.length > 0 ? defuserAlive[0] : (defuserTeam.players||[])[0];
+            let defuser = defuserAlive.length > 0 ? defuserAlive[0] : defuserTeam.players[0];
             
             roundEvents.push(`<div class="event-line event-defuse">✂️ <span style="color:${defuserColor}">${defuser.nick}</span> обезвредил бомбу</div>`);
             
@@ -1674,4 +1694,4 @@ checkState();
 </script>
 </body>
 </html>
- 
+
