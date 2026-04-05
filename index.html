@@ -647,6 +647,8 @@
     </div>
 </div>
 
+<button onclick="repairDatabase()">FIX DATA</button>
+
 <script>
 /* ========================================================================
    ULTRA ENGINE JAVASCRIPT - v5.4.2 PRO
@@ -700,6 +702,34 @@ let currentLogIdx = 0, teams = [], tournaments = [], matches = [], activeMatch =
 let currentRole = sessionStorage.getItem("es_role"), currentTourneyId = localStorage.getItem("es_tourney_id");
 let editingTeamIdx = null; 
 let currentLiveMapState = null; 
+
+
+async function repairDatabase() {
+    console.log("Начинаю ремонт команд...");
+    const teamsRef = db.ref('teams'); // Убедись, что путь к командам верный
+    
+    const snapshot = await teamsRef.once('value');
+    const allTeams = snapshot.val();
+
+    for (let id in allTeams) {
+        let team = allTeams[id];
+        if (team.players) {
+            // Превращаем всё в нормальный массив и убираем пустые ячейки
+            const cleanPlayers = Array.isArray(team.players) 
+                ? team.players.filter(p => p !== null) 
+                : Object.values(team.players).filter(p => p !== null);
+            
+            // Сохраняем почищенный список обратно
+            await teamsRef.child(id).update({
+                players: cleanPlayers
+            });
+        }
+    }
+    alert("Все команды приведены в порядок! Теперь попробуй симуляцию.");
+}
+    
+
+    
 
 // --- NAVIGATION & AUTH ---
 function changeLog(dir) { 
