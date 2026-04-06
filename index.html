@@ -4,9 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="Esports Manager Pro - Advanced Match Simulation System">
-<meta name="version" content="5.8.1">
+<meta name="version" content="5.9.0">
 <meta name="author" content="Gemini AI Collaboration">
-<title>MATCH SIMULATION v5.8.1 PRO</title>
+<title>MATCH SIMULATION v5.9.0 PRO</title>
 
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
@@ -539,7 +539,7 @@
 <div class="container">
     <div id="authSection">
         <h1>MATCH SIMULATION</h1>
-        <div class="sub-title">VERSION 5.8.1 PRO</div>
+        <div class="sub-title">VERSION 5.9.0 PRO</div>
         
         <div class="changelog-container">
             <div class="changelog-header">
@@ -598,7 +598,16 @@
                 <div id="teamsDisplay" style="margin-top:20px;"></div>
                 
                 <div id="playerEditor" class="player-editor-box" style="display:none;">
-                    <h4 id="editingTeamName" style="color:var(--accent); margin-top:0;">Редактирование состава</h4>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                        <h4 id="editingTeamName" style="color:var(--accent); margin:0;">Редактирование состава</h4>
+                    </div>
+                    
+                    <div style="display:flex; gap:10px; margin-bottom: 15px; background: rgba(0,0,0,0.4); padding: 10px; border-radius: 8px;">
+                        <input type="text" id="editTName" placeholder="Новое имя команды" style="flex:1; margin:0;">
+                        <input type="number" id="editTPower" placeholder="Сила команды" style="width:120px; margin:0;" min="1">
+                        <button onclick="saveTeamInfo()" style="padding: 10px 15px; margin:0;">Сохранить</button>
+                    </div>
+                    
                     <div id="playerList"></div>
                     <div class="player-row">
                         <input type="text" id="pNick" placeholder="Ник игрока">
@@ -650,7 +659,7 @@
 
 <script>
 /* ========================================================================
-   ULTRA ENGINE JAVASCRIPT - v5.8.1 PRO
+   ULTRA ENGINE JAVASCRIPT - v5.9.0 PRO
    ======================================================================== */
 
 function cleanName(name) {
@@ -682,6 +691,7 @@ const MAP_DATA = {
 const MAP_POOL = Object.keys(MAP_DATA);
 
 const UPDATES = [
+    { v: "5.9.0", items: ["Исправлен баг с овертаймами (MR3): теперь матч корректно завершается при разрыве в 2 раунда (например, 16:14, 19:17) согласно правилам CS2.", "Добавлена панель редактирования команды: теперь при клике на команду можно изменить не только игроков, но и её название и силу.", "Устранена проблема 'сухих' матчей (13:1, 13:2): перебалансировано влияние экономики (кап снижен с 35% до 20%) и установлен жесткий лимит минимального шанса на победу в раунде (12%), что делает камбэки более частыми, а игры - зрелищными и длинными.", "Пофикшено отображение и расчет 'реального шанса': строгая типизация силы команд (Number) предотвращает математические ошибки при расчете базы вероятности."] },
     { v: "5.8.1", items: ["Улучшена система 'Морали' (Momentum): теперь бонусы начисляются по плавной кривой. Первая победа дает +1.5%, вторая +1.0%, третья и последующие +0.5%.", "Введен жесткий лимит (кап) доминации в 10%, чтобы предотвратить бесконечный рост шансов (Snowball эффект) при очень длинных сериях.", "Алгоритм расчета шансов теперь имитирует реалистичное психологическое плато команд в соревновательном CS2."] },
     { v: "5.8.0", items: ["Исправлена проблема 13 поражений подряд: внедрена система 'Морали' (Momentum). Длительные серии побед теперь дают бонус к шансам команды, делая камбэки реалистичными, а доминацию — заслуженной.", "Умный закуп после пистолетки: победившая команда в 1 и 13 раундах больше не уходит в Eco, а делает уверенный Force-buy (закупка SMG/Famas/Galil + броня), как в реальном CS2.", "Точная экономика CS2: перераспределены награды за раунд. Победа взрывом/дефьюзом теперь дает $17,500 ($3,500/игрок), победа зачисткой — $16,250. Поражение с установленной бомбой дает команде атаки бонус +$4,000 (+$800/игрок).", "Награда за установку: игрок, установивший или разминировавший бомбу, приносит себе и команде $300 индивидуального бонуса, а не $1500 как раньше."] },
     { v: "5.7.0", items: ["Глобальный апдейт экономики: теперь система учитывает не только деньги, но и сохраненное оружие (Firepower Index).", "Умный ECO-закуп: если команда сохранила 3 и более девайса, она больше не уходит в глухое ECO, а докупает остальным игрокам (FORCE).", "Индивидуальный инвентарь: каждый игрок теперь имеет свой слот под оружие, броню и гранаты (Smoke, Flash, HE).", "Интеграция гранат в лог: добавлены реалистичные убийства 'в дыму', 'под флешку' или 'после HE' в зависимости от наличия гранат у игрока.", "Динамический шанс победы: штраф за ECO больше не фиксирован (-35%), а высчитывается математически из разницы общей огневой мощи команд."] },
@@ -917,7 +927,26 @@ function openPlayerEditor(idx) {
     const t = teams[idx];
     document.getElementById("playerEditor").style.display = "block";
     document.getElementById("editingTeamName").innerText = "Состав: " + t.name + " (Сила: " + calculateTeamPower(t) + ")";
+    
+    // NEW 5.9.0: Pre-fill Team Edit Panel
+    document.getElementById("editTName").value = t.name;
+    document.getElementById("editTPower").value = t.power !== undefined ? t.power : calculateTeamPower(t);
+
     renderPlayers();
+}
+
+// NEW 5.9.0: Save Team Info
+function saveTeamInfo() {
+    if(editingTeamIdx === null) return;
+    let n = document.getElementById("editTName").value.trim();
+    let p = parseInt(document.getElementById("editTPower").value);
+    
+    if(n) teams[editingTeamIdx].name = n;
+    if(p && p > 0) teams[editingTeamIdx].power = p;
+    
+    db.ref("teams/" + currentTourneyId).set(teams);
+    document.getElementById("editingTeamName").innerText = "Состав: " + teams[editingTeamIdx].name + " (Сила: " + calculateTeamPower(teams[editingTeamIdx]) + ")";
+    updateSelectors();
 }
 
 function closePlayerEditor() { 
@@ -965,10 +994,10 @@ function removePlayer(idx) {
 }
 
 function calculateTeamPower(team) {
-    if (team.power !== undefined && team.power > 0) return team.power;
+    if (team.power !== undefined && team.power > 0) return Number(team.power);
     let pArr = Array.isArray(team.players) ? team.players : Object.values(team.players || {});
     if (pArr.length === 0) return 0;
-    return pArr.reduce((sum, p) => sum + (p.power || 0), 0);
+    return pArr.reduce((sum, p) => sum + Number(p.power || 0), 0);
 }
 
 function startVeto() {
@@ -1218,9 +1247,9 @@ function conductUltraRound(t1, t2, mObj, state) {
         currentEquip2[p.nick] = inv;
     });
 
-    // 3. РАСЧЕТ ШАНСОВ (Математика по Firepower + Advanced Morale 5.8.1)
-    let p1 = calculateTeamPower(t1);
-    let p2 = calculateTeamPower(t2);
+    // 3. РАСЧЕТ ШАНСОВ (Математика по Firepower + Advanced Morale 5.9.0)
+    let p1 = Number(calculateTeamPower(t1));
+    let p2 = Number(calculateTeamPower(t2));
     let baseChance = (p1 / (p1 + p2)) * 100;
     
     let sideChanceMod = 0;
@@ -1232,10 +1261,10 @@ function conductUltraRound(t1, t2, mObj, state) {
     let fp1 = buy1.cost + gear1.gearValue;
     let fp2 = buy2.cost + gear2.gearValue;
     let diff = fp1 - fp2;
-    let econChanceMod = (diff / 1000) * 1.8;
-    econChanceMod = Math.max(-35, Math.min(35, econChanceMod));
+    let econChanceMod = (diff / 1000) * 1.0; // 5.9.0 Изменение баланса экономики
+    econChanceMod = Math.max(-20, Math.min(20, econChanceMod)); // 5.9.0 Уменьшен максимальный эффект сноудбола
     
-    // 5.8.1 UPDATE: Продвинутая система Морали с плато и лимитом 10%
+    // Продвинутая система Морали с плато и лимитом 10%
     let moraleMod = 0;
     
     /**
@@ -1274,7 +1303,7 @@ function conductUltraRound(t1, t2, mObj, state) {
     }
     
     let finalChance = baseChance + sideChanceMod + econChanceMod + moraleMod;
-    finalChance = Math.max(5, Math.min(95, finalChance));
+    finalChance = Math.max(12, Math.min(88, finalChance)); // 5.9.0 Увеличен лимит камбека
     let win1 = (Math.random() * 100) < finalChance;
 
     // 4. СИМУЛЯЦИЯ СОБЫТИЙ
@@ -1536,14 +1565,19 @@ function playOneRoundStep() {
     renderActiveMatch();
 
     let s = currentLiveMapState;
+    
+    // NEW 5.9.0 CS2 OVERTIME LOGIC FIX
     let isEnd = false;
-    
-    if((s.r1===13 && s.r2<12) || (s.r2===13 && s.r1<12)) isEnd = true;
-    
-    if(s.r1>=12 && s.r2>=12){ 
-        let lim = 16; 
-        while(s.r1 > lim-1 && s.r2 > lim-1) { lim += 3; }
-        if((s.r1 === lim && Math.abs(s.r1-s.r2)>=2) || (s.r2 === lim && Math.abs(s.r2-s.r1)>=2)) isEnd = true; 
+    let target = 13;
+    if (s.r1 >= 12 && s.r2 >= 12) {
+        let ties = Math.min(s.r1, s.r2);
+        if (ties >= 12) {
+            let ot_index = Math.floor((ties - 12) / 3);
+            target = 16 + (ot_index * 3);
+        }
+    }
+    if ((s.r1 === target && s.r2 <= target - 2) || (s.r2 === target && s.r1 <= target - 2)) {
+        isEnd = true;
     }
 
     if(isEnd) { saveMapResult(s); currentLiveMapState = null; }
@@ -1555,11 +1589,18 @@ function playNextMapFull() {
     
     for(let i=0; i<80; i++){
         s = conductUltraRound(am.t1, am.t2, mObj, s);
-        if((s.r1===13 && s.r2<12) || (s.r2===13 && s.r1<12)) break;
-        if(s.r1>=12 && s.r2>=12){ 
-            let lim = 16; 
-            while(s.r1 > lim-1 && s.r2 > lim-1) { lim += 3; }
-            if((s.r1 === lim && Math.abs(s.r1-s.r2)>=2) || (s.r2 === lim && Math.abs(s.r2-s.r1)>=2)) break; 
+        
+        // NEW 5.9.0 CS2 OVERTIME LOGIC FIX
+        let target = 13;
+        if (s.r1 >= 12 && s.r2 >= 12) {
+            let ties = Math.min(s.r1, s.r2);
+            if (ties >= 12) {
+                let ot_index = Math.floor((ties - 12) / 3);
+                target = 16 + (ot_index * 3);
+            }
+        }
+        if ((s.r1 === target && s.r2 <= target - 2) || (s.r2 === target && s.r1 <= target - 2)) {
+            break;
         }
     }
     saveMapResult(s);
@@ -1685,4 +1726,3 @@ checkState();
 </script>
 </body>
 </html>
- 
