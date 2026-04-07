@@ -4,9 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="Esports Manager Pro - Advanced Match Simulation System">
-<meta name="version" content="5.9.0">
+<meta name="version" content="5.10.0">
 <meta name="author" content="Gemini AI Collaboration">
-<title>MATCH SIMULATION v5.9.0 PRO</title>
+<title>MATCH SIMULATION v5.10.0 PRO</title>
 
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
@@ -539,7 +539,7 @@
 <div class="container">
     <div id="authSection">
         <h1>MATCH SIMULATION</h1>
-        <div class="sub-title">VERSION 5.9.0 PRO</div>
+        <div class="sub-title">VERSION 5.10.0 PRO</div>
         
         <div class="changelog-container">
             <div class="changelog-header">
@@ -659,9 +659,14 @@
 
 <script>
 /* ========================================================================
-   ULTRA ENGINE JAVASCRIPT - v5.9.0 PRO
+   ULTRA ENGINE JAVASCRIPT - v5.10.0 PRO
    ======================================================================== */
 
+/**
+ * Очистка строковых значений от запрещенных символов Firebase
+ * @param {string} name - Исходное имя
+ * @returns {string} - Очищенное имя
+ */
 function cleanName(name) {
     if (!name) return "";
     return name.replace(/[.#$\[\]\/]/g, "").trim();
@@ -691,6 +696,7 @@ const MAP_DATA = {
 const MAP_POOL = Object.keys(MAP_DATA);
 
 const UPDATES = [
+    { v: "5.10.0", items: ["Глобальный ребаланс системы матчмейкинга: матчи стали намного плотнее и реалистичнее (в стиле CS2).", "Добавлена новая система 'Comeback Factor' (Фактор отыгрыша): команда, отстающая на 3 и более раундов, получает прогрессивный бонус к вероятности победы.", "Система 'Морали' (Snowball) значительно ослаблена, чтобы предотвратить бесконечные лузстрики со счетом 13:2.", "Снижено влияние экономики на шанс победы (кап уменьшен с 20% до 12%), что повышает шансы на успешные форс-баи и эко-раунды.", "Установлены новые, более жесткие границы вероятности победы (от 22% до 78%), гарантирующие элемент случайности и зрелищности в каждом раунде."] },
     { v: "5.9.0", items: ["Исправлен баг с овертаймами (MR3): теперь матч корректно завершается при разрыве в 2 раунда (например, 16:14, 19:17) согласно правилам CS2.", "Добавлена панель редактирования команды: теперь при клике на команду можно изменить не только игроков, но и её название и силу.", "Устранена проблема 'сухих' матчей (13:1, 13:2): перебалансировано влияние экономики (кап снижен с 35% до 20%) и установлен жесткий лимит минимального шанса на победу в раунде (12%), что делает камбэки более частыми, а игры - зрелищными и длинными.", "Пофикшено отображение и расчет 'реального шанса': строгая типизация силы команд (Number) предотвращает математические ошибки при расчете базы вероятности."] },
     { v: "5.8.1", items: ["Улучшена система 'Морали' (Momentum): теперь бонусы начисляются по плавной кривой. Первая победа дает +1.5%, вторая +1.0%, третья и последующие +0.5%.", "Введен жесткий лимит (кап) доминации в 10%, чтобы предотвратить бесконечный рост шансов (Snowball эффект) при очень длинных сериях.", "Алгоритм расчета шансов теперь имитирует реалистичное психологическое плато команд в соревновательном CS2."] },
     { v: "5.8.0", items: ["Исправлена проблема 13 поражений подряд: внедрена система 'Морали' (Momentum). Длительные серии побед теперь дают бонус к шансам команды, делая камбэки реалистичными, а доминацию — заслуженной.", "Умный закуп после пистолетки: победившая команда в 1 и 13 раундах больше не уходит в Eco, а делает уверенный Force-buy (закупка SMG/Famas/Galil + броня), как в реальном CS2.", "Точная экономика CS2: перераспределены награды за раунд. Победа взрывом/дефьюзом теперь дает $17,500 ($3,500/игрок), победа зачисткой — $16,250. Поражение с установленной бомбой дает команде атаки бонус +$4,000 (+$800/игрок).", "Награда за установку: игрок, установивший или разминировавший бомбу, приносит себе и команде $300 индивидуального бонуса, а не $1500 как раньше."] },
@@ -719,11 +725,18 @@ let currentRole = sessionStorage.getItem("es_role"), currentTourneyId = localSto
 let editingTeamIdx = null; 
 let currentLiveMapState = null; 
 
+/**
+ * Переключение версий в Changelog
+ * @param {number} dir - Направление переключения (-1 или 1)
+ */
 function changeLog(dir) { 
     currentLogIdx = (currentLogIdx + dir + UPDATES.length) % UPDATES.length; 
     renderLog(); 
 }
 
+/**
+ * Отрисовка текущей версии Changelog
+ */
 function renderLog() {
     const up = UPDATES[currentLogIdx];
     document.getElementById("verTitle").innerText = "Version " + up.v;
@@ -732,6 +745,10 @@ function renderLog() {
 
 renderLog();
 
+/**
+ * Авторизация пользователя (Администратор или Зритель)
+ * @param {boolean} isAdmin - Флаг попытки входа как администратор
+ */
 function auth(isAdmin) {
     const _access_vault = "UEFSQUxMQVgzOTUwUA==";
     if (isAdmin === true) {
@@ -750,18 +767,27 @@ function auth(isAdmin) {
     checkState();
 }
 
+/**
+ * Выход из системы с очисткой данных сессии
+ */
 function logout() { 
     sessionStorage.clear(); 
     localStorage.clear(); 
     location.reload(); 
 }
 
+/**
+ * Выход из текущего турнира в главное меню турниров
+ */
 function exitTourney() { 
     localStorage.removeItem("es_tourney_id"); 
     currentTourneyId = null; 
     checkState(); 
 }
 
+/**
+ * Проверка и переключение состояний интерфейса (Панели)
+ */
 function checkState() {
     const authUI = document.getElementById("authSection");
     const tourneyUI = document.getElementById("tourneySection");
@@ -785,6 +811,9 @@ function checkState() {
     }
 }
 
+/**
+ * Загрузка списка всех турниров из Firebase
+ */
 function loadTournaments() {
     db.ref("tournaments").on("value", s => {
         const val = s.val() || {};
@@ -810,6 +839,9 @@ function loadTournaments() {
     });
 }
 
+/**
+ * Создание нового турнира и перенос команд
+ */
 function createTourney() { 
     const n = document.getElementById("newTourneyName").value.trim(); 
     if(n) {
@@ -832,24 +864,38 @@ function createTourney() {
     document.getElementById("newTourneyName").value = "";
 }
 
+/**
+ * Выбор активного турнира для просмотра или администрирования
+ * @param {string} id - ID турнира в Firebase
+ */
 function selectTourney(id) { 
     currentTourneyId = id; 
     localStorage.setItem("es_tourney_id", id); 
     checkState(); 
 }
 
+/**
+ * Перенос турнира в архив
+ */
 function finishTourney() { 
     if(confirm("Перенести турнир в архив?")) {
         db.ref("tournaments/" + currentTourneyId).update({ status: "finished", finishedAt: Date.now() }); 
     }
 }
 
+/**
+ * Безвозвратное удаление турнира
+ * @param {string} id - ID удаляемого турнира
+ */
 function deleteTourney(id) { 
     if(confirm("ВНИМАНИЕ: Безвозвратно удалить турнир и всю его историю матчей?")) {
         db.ref("tournaments/" + id).remove(); 
     }
 }
 
+/**
+ * Загрузка актуальных данных текущего турнира (Команды, Матчи)
+ */
 function loadTourneyData() {
     db.ref("tournaments/" + currentTourneyId).on("value", s => {
         const t = s.val(); 
@@ -874,6 +920,9 @@ function loadTourneyData() {
     });
 }
 
+/**
+ * Обновление визуальных списков и селекторов команд
+ */
 function updateSelectors() {
     const d = document.getElementById("teamsDisplay");
     if(d) {
@@ -900,6 +949,9 @@ function updateSelectors() {
     }
 }
 
+/**
+ * Добавление новой команды в список турнира
+ */
 function addTeam() { 
     let n = document.getElementById("tName"); 
     let p = document.getElementById("tPower");
@@ -915,6 +967,10 @@ function addTeam() {
     }
 }
 
+/**
+ * Удаление команды из турнира
+ * @param {number} i - Индекс команды
+ */
 function deleteTeam(i) { 
     if(confirm("Удалить команду?")) { 
         teams.splice(i,1); 
@@ -922,6 +978,10 @@ function deleteTeam(i) {
     } 
 }
 
+/**
+ * Открытие редактора игроков и характеристик команды
+ * @param {number} idx - Индекс выбранной команды
+ */
 function openPlayerEditor(idx) {
     editingTeamIdx = idx;
     const t = teams[idx];
@@ -935,7 +995,9 @@ function openPlayerEditor(idx) {
     renderPlayers();
 }
 
-// NEW 5.9.0: Save Team Info
+/**
+ * Сохранение отредактированной информации о команде (v5.9.0+)
+ */
 function saveTeamInfo() {
     if(editingTeamIdx === null) return;
     let n = document.getElementById("editTName").value.trim();
@@ -954,6 +1016,9 @@ function closePlayerEditor() {
     editingTeamIdx = null; 
 }
 
+/**
+ * Рендеринг текущего списка игроков в редакторе
+ */
 function renderPlayers() {
     const t = teams[editingTeamIdx];
     const list = document.getElementById("playerList");
@@ -968,6 +1033,9 @@ function renderPlayers() {
     `).join("");
 }
 
+/**
+ * Добавление нового игрока в ростер
+ */
 function savePlayer() {
     const t = teams[editingTeamIdx];
     t.players = Array.isArray(t.players) ? t.players : Object.values(t.players || {});
@@ -986,6 +1054,10 @@ function savePlayer() {
     }
 }
 
+/**
+ * Удаление игрока из ростера команды
+ * @param {number} idx - Индекс игрока
+ */
 function removePlayer(idx) {
     teams[editingTeamIdx].players = Array.isArray(teams[editingTeamIdx].players) ? teams[editingTeamIdx].players : Object.values(teams[editingTeamIdx].players || {});
     teams[editingTeamIdx].players.splice(idx, 1);
@@ -993,6 +1065,11 @@ function removePlayer(idx) {
     renderPlayers();
 }
 
+/**
+ * Калькуляция суммарной силы команды.
+ * @param {object} team - Объект команды
+ * @returns {number} Общая сила
+ */
 function calculateTeamPower(team) {
     if (team.power !== undefined && team.power > 0) return Number(team.power);
     let pArr = Array.isArray(team.players) ? team.players : Object.values(team.players || {});
@@ -1000,6 +1077,9 @@ function calculateTeamPower(team) {
     return pArr.reduce((sum, p) => sum + Number(p.power || 0), 0);
 }
 
+/**
+ * Старт процесса Veto (выбор и бан карт) перед началом серии
+ */
 function startVeto() {
     let i1 = document.getElementById("sel1").value;
     let i2 = document.getElementById("sel2").value;
@@ -1075,6 +1155,15 @@ function startVeto() {
 }
 
 // 5.8.0 FIREPOWER & INVENTORY ENGINE WITH MOMENTUM
+// 5.10.0 COMEBACK SYSTEM REWORKED FOR CLOSE MATCHES
+
+/**
+ * Получение стандартного оружия в зависимости от роли, экономики и стороны
+ * @param {string} role - Роль игрока
+ * @param {string} ecoType - Тип экономики (FULL, FORCE, ECO, PISTOL)
+ * @param {boolean} isT - Играет ли игрок за Террористов
+ * @returns {string} - Название выданного оружия
+ */
 function getWeaponForRole(role, ecoType, isT) {
     if (ecoType === "PISTOL") return isT ? "Glock-18" : "USP-S";
     if (ecoType === "ECO") return isT ? "P250" : "P250";
@@ -1087,6 +1176,11 @@ function getWeaponForRole(role, ecoType, isT) {
     return isT ? "AK-47" : "M4A4";
 }
 
+/**
+ * Определение веса (вероятности) совершения килла игроком на основе роли
+ * @param {string} role - Роль игрока
+ * @returns {number} - Вес для рулетки вероятностей
+ */
 function getPlayerKillWeight(role) {
     if (role === 'Sniper') return 30;
     if (role === 'Lurker') return 25;
@@ -1096,6 +1190,11 @@ function getPlayerKillWeight(role) {
     return 20; 
 }
 
+/**
+ * Случайный выбор игрока из команды с учетом весов (кто сделает килл или умрет)
+ * @param {Array} playersArr - Массив доступных (живых) игроков
+ * @returns {object} - Объект выбранного игрока
+ */
 function selectPlayerWeighted(playersArr) {
     if (playersArr.length === 0) return null;
     let totalWeight = playersArr.reduce((sum, p) => sum + getPlayerKillWeight(p.role), 0);
@@ -1108,6 +1207,12 @@ function selectPlayerWeighted(playersArr) {
     return playersArr[playersArr.length - 1];
 }
 
+/**
+ * Оценка сохраненного инвентаря команды для умного закупа
+ * @param {Array} teamPlayers - Игроки команды
+ * @param {object} invState - Текущий статус инвентарей
+ * @returns {object} - Анализ сохраненного оружия
+ */
 const evaluateSavedGear = (teamPlayers, invState) => {
     let fullCount = 0;
     let gearValue = 0;
@@ -1124,7 +1229,10 @@ const evaluateSavedGear = (teamPlayers, invState) => {
     return { fullCount, gearValue };
 };
 
-// Учет победы в прошлом раунде для умного FORCE-закупа
+/**
+ * Расчет командного закупа (Экономика CS2)
+ * Учитывает лузстрик, текущий баланс, сохраненное оружие и овертаймы.
+ */
 const calculateTeamBuy = (money, isPistol, isOT, lossStreak, currentRound, savedGear, wonLastRound) => {
     if(isOT) {
         let cost = Math.min(money, 23500);
@@ -1160,6 +1268,42 @@ const calculateTeamBuy = (money, isPistol, isOT, lossStreak, currentRound, saved
     return { type: "ECO", cost: Math.min(money, Math.max(1500, maxSpendToKeepFull)) };
 };
 
+/**
+ * Расчет бонуса морали на основе победной серии (стрика).
+ * В версии 5.10.0 бонус значительно ослаблен для предотвращения сноуболла.
+ * Функция оставлена по требованиям пользователя.
+ * @param {number} streak - Текущая серия побед команды
+ * @returns {number} Бонус в процентах к шансу на победу
+ */
+const calculateAdvancedMorale = (streak) => {
+    if (streak === 0) return 0;
+    let bonus = 0;
+    if (streak >= 1) bonus += 0.5; // Было 1.5
+    if (streak >= 2) bonus += 0.5; // Было 1.0
+    if (streak >= 3) bonus += (streak - 2) * 0.2; // Было 0.5
+    return Math.min(bonus, 3.0); // Сильный нерф, кап теперь 3.0 (было 10.0)
+};
+
+/**
+ * Расчет фактора камбека (Comeback Factor).
+ * Новая функция версии 5.10.0 для помощи отстающим командам.
+ * @param {number} diff - Абсолютная разница в счете
+ * @returns {number} Бонус (в процентах) для отстающей команды
+ */
+const calculateComebackFactor = (diff) => {
+    if (diff >= 3) {
+        return Math.min((diff - 2) * 2.0, 10.0); // Дает от 2% до 10% отстающей команде
+    }
+    return 0;
+};
+
+/**
+ * Проведение одного реалистичного раунда со всеми расчетами (Ядро симуляции)
+ * @param {object} t1 - Команда 1
+ * @param {object} t2 - Команда 2
+ * @param {object} mObj - Объект карты
+ * @param {object} state - Состояние симуляции
+ */
 function conductUltraRound(t1, t2, mObj, state) {
     t1.players = Array.isArray(t1.players) ? t1.players : Object.values(t1.players || {});
     t2.players = Array.isArray(t2.players) ? t2.players : Object.values(t2.players || {});
@@ -1178,7 +1322,7 @@ function conductUltraRound(t1, t2, mObj, state) {
         });
     }
     
-    // Инициализация системы морали (стриков)
+    // Инициализация системы стриков
     state.streak1 = state.streak1 || 0;
     state.streak2 = state.streak2 || 0;
     state.lastWin = state.lastWin || 0;
@@ -1220,7 +1364,7 @@ function conductUltraRound(t1, t2, mObj, state) {
     let m1_after = state.m1;
     let m2_after = state.m2;
 
-    // Раздача экипировки на текущий раунд
+    // 2. Раздача экипировки на текущий раунд
     let currentEquip1 = {}, currentEquip2 = {};
     
     t1.players.forEach(p => {
@@ -1247,7 +1391,7 @@ function conductUltraRound(t1, t2, mObj, state) {
         currentEquip2[p.nick] = inv;
     });
 
-    // 3. РАСЧЕТ ШАНСОВ (Математика по Firepower + Advanced Morale 5.9.0)
+    // 3. РАСЧЕТ ШАНСОВ (Математика по Firepower + Comeback Factor 5.10.0)
     let p1 = Number(calculateTeamPower(t1));
     let p2 = Number(calculateTeamPower(t2));
     let baseChance = (p1 / (p1 + p2)) * 100;
@@ -1261,52 +1405,31 @@ function conductUltraRound(t1, t2, mObj, state) {
     let fp1 = buy1.cost + gear1.gearValue;
     let fp2 = buy2.cost + gear2.gearValue;
     let diff = fp1 - fp2;
-    let econChanceMod = (diff / 1000) * 1.0; // 5.9.0 Изменение баланса экономики
-    econChanceMod = Math.max(-20, Math.min(20, econChanceMod)); // 5.9.0 Уменьшен максимальный эффект сноудбола
+    // 5.10.0 Снижено влияние экономики для частых камбеков (множитель 0.6, лимит 12%)
+    let econChanceMod = (diff / 1000) * 0.6; 
+    econChanceMod = Math.max(-12, Math.min(12, econChanceMod)); 
     
-    // Продвинутая система Морали с плато и лимитом 10%
+    // Продвинутая система Морали и Камбека (5.10.0)
     let moraleMod = 0;
-    
-    /**
-     * Расчет бонуса морали на основе победной серии (стрика).
-     * @param {number} streak - Текущая серия побед команды
-     * @returns {number} Бонус в процентах к шансу на победу
-     */
-    const calculateAdvancedMorale = (streak) => {
-        if (streak === 0) return 0;
-        let bonus = 0;
-        
-        // Первая победа: +1.5%
-        if (streak >= 1) {
-            bonus += 1.5;
-        }
-        
-        // Вторая победа: +1.0%
-        if (streak >= 2) {
-            bonus += 1.0;
-        }
-        
-        // Третья победа и далее: +0.5% за каждую
-        if (streak >= 3) {
-            bonus += (streak - 2) * 0.5;
-        }
-        
-        // Максимальный лимит (плато) - 10%
-        return Math.min(bonus, 10.0);
-    };
+    let comebackMod = 0;
+    let scoreDiff = state.r1 - state.r2;
 
-    if (state.streak1 > 0) {
-        moraleMod += calculateAdvancedMorale(state.streak1);
-    }
-    if (state.streak2 > 0) {
-        moraleMod -= calculateAdvancedMorale(state.streak2);
+    if (state.streak1 > 0) moraleMod += calculateAdvancedMorale(state.streak1);
+    if (state.streak2 > 0) moraleMod -= calculateAdvancedMorale(state.streak2);
+    
+    // Новая логика камбеков (Фактор отыгрыша)
+    if (scoreDiff >= 3) {
+        comebackMod -= calculateComebackFactor(scoreDiff); // Команда 2 отстает, шанс Команды 1 снижается
+    } else if (scoreDiff <= -3) {
+        comebackMod += calculateComebackFactor(Math.abs(scoreDiff)); // Команда 1 отстает, шанс Команды 1 повышается
     }
     
-    let finalChance = baseChance + sideChanceMod + econChanceMod + moraleMod;
-    finalChance = Math.max(12, Math.min(88, finalChance)); // 5.9.0 Увеличен лимит камбека
+    let finalChance = baseChance + sideChanceMod + econChanceMod + moraleMod + comebackMod;
+    // 5.10.0 Лимиты вероятности сжаты до 22% - 78% (убраны непробиваемые раунды)
+    finalChance = Math.max(22, Math.min(78, finalChance)); 
     let win1 = (Math.random() * 100) < finalChance;
 
-    // 4. СИМУЛЯЦИЯ СОБЫТИЙ
+    // 4. СИМУЛЯЦИЯ СОБЫТИЙ РАУНДА
     let roundEvents = [];
     let alive1 = [...t1.players];
     let alive2 = [...t2.players];
@@ -1445,12 +1568,10 @@ function conductUltraRound(t1, t2, mObj, state) {
         state.r1++; state.l1 = 0; state.l2++;
         state.streak1++; state.streak2 = 0; state.lastWin = 1;
         
-        // Взрыв (T) или Дефьюз (CT) дают больше, чем Elimination
         let winBonus1 = ((isBombPlant && t1IsT) || (isDefuse && !t1IsT)) ? 17500 : 16250;
         totalEarned1 += winBonus1; 
         
         let lossBonus2 = getLossMoney(state.l2 - 1);
-        // Если Террористы проиграли, но ставили бомбу, им бонус +$4000
         if (isBombPlant && t2IsT) lossBonus2 += 4000;
         
         totalEarned2 += lossBonus2;
@@ -1479,6 +1600,7 @@ function conductUltraRound(t1, t2, mObj, state) {
         <span style="opacity:0.8">• Бонус стороны (${mObj.name} - ${sideStrong}): ${sideChanceMod > 0 ? '+' : ''}${sideChanceMod.toFixed(1)}% для ${t1.name}</span><br>
         <span style="opacity:0.8">• Экономика (Firepower: $${fp1} vs $${fp2}): ${econChanceMod > 0 ? '+' : ''}${econChanceMod.toFixed(1)}% для ${t1.name}</span><br>
         <span style="opacity:0.8">• Мораль (Streak): ${moraleMod > 0 ? '+' : ''}${moraleMod.toFixed(1)}% для ${t1.name}</span><br>
+        ${Math.abs(scoreDiff) >= 3 ? `<span style="opacity:0.8; color:#ffb74d;">• Фактор камбека (Comeback): ${comebackMod > 0 ? '+' : ''}${comebackMod.toFixed(1)}% для ${t1.name}</span><br>` : ''}
         <b style="color:var(--accent); margin-top:5px; display:inline-block;">ИТОГОВЫЙ ШАНС ПОБЕДЫ: ${t1.name.toUpperCase()} ${finalChance.toFixed(1)}% | ${t2.name.toUpperCase()} ${(100-finalChance).toFixed(1)}%</b>
     </div>`;
     
@@ -1531,6 +1653,9 @@ function conductUltraRound(t1, t2, mObj, state) {
     return state;
 }
 
+/**
+ * Отрисовка интерфейса активного Live-матча
+ */
 function renderActiveMatch() {
     const am = activeMatch; 
     if(!am) return;
@@ -1555,6 +1680,9 @@ function renderActiveMatch() {
     }
 }
 
+/**
+ * Проведение одного раунда вручную (Live Step)
+ */
 function playOneRoundStep() {
     let am = activeMatch, mObj = am.maps[am.currentMapIdx];
     if(!currentLiveMapState) {
@@ -1583,6 +1711,9 @@ function playOneRoundStep() {
     if(isEnd) { saveMapResult(s); currentLiveMapState = null; }
 }
 
+/**
+ * Автоматическое прохождение всей карты до конца
+ */
 function playNextMapFull() {
     let am = activeMatch, mObj = am.maps[am.currentMapIdx];
     let s = { r1:0, r2:0, l1:0, l2:0, streak1:0, streak2:0, lastWin:0, r:0, h:[], m1: 4000, m2: 4000, t1T: (mObj.t_start === am.t1.name), pStats: null };
@@ -1590,7 +1721,6 @@ function playNextMapFull() {
     for(let i=0; i<80; i++){
         s = conductUltraRound(am.t1, am.t2, mObj, s);
         
-        // NEW 5.9.0 CS2 OVERTIME LOGIC FIX
         let target = 13;
         if (s.r1 >= 12 && s.r2 >= 12) {
             let ties = Math.min(s.r1, s.r2);
@@ -1606,6 +1736,10 @@ function playNextMapFull() {
     saveMapResult(s);
 }
 
+/**
+ * Сохранение результатов сыгранной карты и обновление общего счета
+ * @param {object} s - Финальное состояние сыгранной карты
+ */
 function saveMapResult(s) {
     let am = activeMatch, mObj = am.maps[am.currentMapIdx];
     
@@ -1628,6 +1762,12 @@ function saveMapResult(s) {
     }
 }
 
+/**
+ * Генерация HTML-таблицы с послематчевой статистикой команды
+ * @param {string} tName - Название команды
+ * @param {object} statsObj - Объект со статистикой игроков
+ * @returns {string} - HTML разметка таблицы
+ */
 function generateStatsTable(tName, statsObj) {
     if (!statsObj) return "";
     let sortedNicks = Object.keys(statsObj).sort((a, b) => statsObj[b].k - statsObj[a].k);
@@ -1655,6 +1795,9 @@ function generateStatsTable(tName, statsObj) {
         </div>`;
 }
 
+/**
+ * Отрисовка полной истории завершенных матчей турнира с вычислением MVP
+ */
 function renderHistory() {
     document.getElementById("matchHistory").innerHTML = matches.map(m => {
         let matchMvp = null, maxMvpScore = -1, maxKillsForMvp = 0, ovr = {};
@@ -1726,3 +1869,4 @@ checkState();
 </script>
 </body>
 </html>
+ 
