@@ -4,9 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="Esports Manager Pro - Advanced Match Simulation System">
-<meta name="version" content="5.10.0">
+<meta name="version" content="5.11.0">
 <meta name="author" content="Gemini AI Collaboration">
-<title>MATCH SIMULATION v5.10.0 PRO</title>
+<title>MATCH SIMULATION v5.11.0 PRO</title>
 
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
@@ -539,7 +539,7 @@
 <div class="container">
     <div id="authSection">
         <h1>MATCH SIMULATION</h1>
-        <div class="sub-title">VERSION 5.10.0 PRO</div>
+        <div class="sub-title">VERSION 5.11.0 PRO</div>
         
         <div class="changelog-container">
             <div class="changelog-header">
@@ -659,7 +659,7 @@
 
 <script>
 /* ========================================================================
-   ULTRA ENGINE JAVASCRIPT - v5.10.0 PRO
+   ULTRA ENGINE JAVASCRIPT - v5.11.0 PRO
    ======================================================================== */
 
 /**
@@ -696,6 +696,7 @@ const MAP_DATA = {
 const MAP_POOL = Object.keys(MAP_DATA);
 
 const UPDATES = [
+    { v: "5.11.0", items: ["Улучшено создание команды: теперь при добавлении команды она автоматически заполняется пятью игроками со стандартными ролями (Captain, Sniper, Rifler, Support, Lurker).", "Переработана система вероятности убийств: теперь шанс сделать фраг зависит не только от роли игрока, но и от оружия в его руках (AWP и AK-47 дают гораздо больший шанс, чем пистолеты).", "Исправлена математическая ошибка расчета ADR (Average Damage per Round) в послематчевой статистике: теперь урон делится на реальное количество сыгранных раундов на карте, а не на фиксированные 24."] },
     { v: "5.10.0", items: ["Глобальный ребаланс системы матчмейкинга: матчи стали намного плотнее и реалистичнее (в стиле CS2).", "Добавлена новая система 'Comeback Factor' (Фактор отыгрыша): команда, отстающая на 3 и более раундов, получает прогрессивный бонус к вероятности победы.", "Система 'Морали' (Snowball) значительно ослаблена, чтобы предотвратить бесконечные лузстрики со счетом 13:2.", "Снижено влияние экономики на шанс победы (кап уменьшен с 20% до 12%), что повышает шансы на успешные форс-баи и эко-раунды.", "Установлены новые, более жесткие границы вероятности победы (от 22% до 78%), гарантирующие элемент случайности и зрелищности в каждом раунде."] },
     { v: "5.9.0", items: ["Исправлен баг с овертаймами (MR3): теперь матч корректно завершается при разрыве в 2 раунда (например, 16:14, 19:17) согласно правилам CS2.", "Добавлена панель редактирования команды: теперь при клике на команду можно изменить не только игроков, но и её название и силу.", "Устранена проблема 'сухих' матчей (13:1, 13:2): перебалансировано влияние экономики (кап снижен с 35% до 20%) и установлен жесткий лимит минимального шанса на победу в раунде (12%), что делает камбэки более частыми, а игры - зрелищными и длинными.", "Пофикшено отображение и расчет 'реального шанса': строгая типизация силы команд (Number) предотвращает математические ошибки при расчете базы вероятности."] },
     { v: "5.8.1", items: ["Улучшена система 'Морали' (Momentum): теперь бонусы начисляются по плавной кривой. Первая победа дает +1.5%, вторая +1.0%, третья и последующие +0.5%.", "Введен жесткий лимит (кап) доминации в 10%, чтобы предотвратить бесконечный рост шансов (Snowball эффект) при очень длинных сериях.", "Алгоритм расчета шансов теперь имитирует реалистичное психологическое плато команд в соревновательном CS2."] },
@@ -950,7 +951,7 @@ function updateSelectors() {
 }
 
 /**
- * Добавление новой команды в список турнира
+ * Добавление новой команды в список турнира (v5.11.0: Auto-Fill Ростер)
  */
 function addTeam() { 
     let n = document.getElementById("tName"); 
@@ -958,7 +959,17 @@ function addTeam() {
     
     if(n.value && p.value) { 
         let teamPower = parseInt(p.value) || 50;
-        teams.push({ name: n.value, power: teamPower, players: [] }); 
+        
+        // NEW 5.11.0: Автоматическое заполнение команды стандартными игроками
+        let defaultPlayers = [
+            { nick: "Captain", role: "Captain" },
+            { nick: "Sniper", role: "Sniper" },
+            { nick: "Rifler", role: "Rifler" },
+            { nick: "Support", role: "Support" },
+            { nick: "Lurker", role: "Lurker" }
+        ];
+        
+        teams.push({ name: n.value, power: teamPower, players: defaultPlayers }); 
         db.ref("teams/" + currentTourneyId).set(teams); 
         n.value = ""; 
         p.value = "50";
@@ -1191,17 +1202,52 @@ function getPlayerKillWeight(role) {
 }
 
 /**
- * Случайный выбор игрока из команды с учетом весов (кто сделает килл или умрет)
+ * NEW 5.11.0: Определение дополнительного веса для килла на основе оружия
+ * АВП и Калаш дают огромный буст к вероятности сделать фраг.
+ * @param {string} weapon - Оружие в руках игрока
+ * @returns {number} - Дополнительный вес оружия
+ */
+function getWeaponKillWeight(weapon) {
+    if (!weapon) return 5;
+    const weights = {
+        "AWP": 45,
+        "AK-47": 35,
+        "M4A4": 30,
+        "Galil AR": 20,
+        "FAMAS": 20,
+        "MAC-10": 15,
+        "MP9": 15,
+        "SSG 08": 18,
+        "P250": 10,
+        "Glock-18": 8,
+        "USP-S": 10
+    };
+    return weights[weapon] || 10;
+}
+
+/**
+ * Случайный выбор игрока из команды с учетом весов ролей и оружия (5.11.0 Update)
  * @param {Array} playersArr - Массив доступных (живых) игроков
+ * @param {object} equipObj - (Опционально) Текущий инвентарь команды для расчета веса оружия
  * @returns {object} - Объект выбранного игрока
  */
-function selectPlayerWeighted(playersArr) {
+function selectPlayerWeighted(playersArr, equipObj) {
     if (playersArr.length === 0) return null;
-    let totalWeight = playersArr.reduce((sum, p) => sum + getPlayerKillWeight(p.role), 0);
+    
+    // Вспомогательная функция для подсчета суммарного веса (Роль + Оружие)
+    let getCombinedWeight = (p) => {
+        let baseW = getPlayerKillWeight(p.role);
+        if (equipObj && equipObj[p.nick] && equipObj[p.nick].w) {
+            baseW += getWeaponKillWeight(equipObj[p.nick].w);
+        }
+        return baseW;
+    };
+
+    let totalWeight = playersArr.reduce((sum, p) => sum + getCombinedWeight(p), 0);
     let r = Math.random() * totalWeight;
     let acc = 0;
     for (let p of playersArr) {
-        acc += getPlayerKillWeight(p.role);
+        acc += getCombinedWeight(p);
         if (r <= acc) return p;
     }
     return playersArr[playersArr.length - 1];
@@ -1271,7 +1317,6 @@ const calculateTeamBuy = (money, isPistol, isOT, lossStreak, currentRound, saved
 /**
  * Расчет бонуса морали на основе победной серии (стрика).
  * В версии 5.10.0 бонус значительно ослаблен для предотвращения сноуболла.
- * Функция оставлена по требованиям пользователя.
  * @param {number} streak - Текущая серия побед команды
  * @returns {number} Бонус в процентах к шансу на победу
  */
@@ -1417,7 +1462,7 @@ function conductUltraRound(t1, t2, mObj, state) {
     if (state.streak1 > 0) moraleMod += calculateAdvancedMorale(state.streak1);
     if (state.streak2 > 0) moraleMod -= calculateAdvancedMorale(state.streak2);
     
-    // Новая логика камбеков (Фактор отыгрыша)
+    // Логика камбеков (Фактор отыгрыша)
     if (scoreDiff >= 3) {
         comebackMod -= calculateComebackFactor(scoreDiff); // Команда 2 отстает, шанс Команды 1 снижается
     } else if (scoreDiff <= -3) {
@@ -1463,7 +1508,8 @@ function conductUltraRound(t1, t2, mObj, state) {
 
         if (t1GetsKill) {
             deaths2--;
-            let killer = selectPlayerWeighted(t1.players);
+            // 5.11.0: Учет экипировки (оружия) при выборе убийцы
+            let killer = selectPlayerWeighted(t1.players, currentEquip1);
             let victimIdx = Math.floor(Math.random() * alive2.length);
             let victim = alive2[victimIdx] || t2.players[0];
             if(alive2.length > 0) alive2.splice(victimIdx, 1);
@@ -1498,7 +1544,8 @@ function conductUltraRound(t1, t2, mObj, state) {
             roundEarnedM1 += (weapon === "AWP" ? 100 : 300);
         } else {
             deaths1--;
-            let killer = selectPlayerWeighted(t2.players);
+            // 5.11.0: Учет экипировки (оружия) при выборе убийцы
+            let killer = selectPlayerWeighted(t2.players, currentEquip2);
             let victimIdx = Math.floor(Math.random() * alive1.length);
             let victim = alive1[victimIdx] || t1.players[0];
             if(alive1.length > 0) alive1.splice(victimIdx, 1);
@@ -1538,7 +1585,7 @@ function conductUltraRound(t1, t2, mObj, state) {
         let planterTeam = t1IsT ? t1 : t2;
         let planterTeamObj = t1IsT ? state.pStats.t1 : state.pStats.t2;
         let planterColor = t1IsT ? (t1IsT ? tColor : ctColor) : (t2IsT ? tColor : ctColor); 
-        let planter = selectPlayerWeighted(planterTeam.players);
+        let planter = selectPlayerWeighted(planterTeam.players); // Плант не зависит от оружия
         
         roundEvents.splice(Math.floor(roundEvents.length/2), 0, `<div class="event-line event-bomb">🧨 <span style="color:${planterColor}">${planter.nick}</span> установил бомбу</div>`);
         
@@ -1568,10 +1615,12 @@ function conductUltraRound(t1, t2, mObj, state) {
         state.r1++; state.l1 = 0; state.l2++;
         state.streak1++; state.streak2 = 0; state.lastWin = 1;
         
+        // Взрыв (T) или Дефьюз (CT) дают больше, чем Elimination
         let winBonus1 = ((isBombPlant && t1IsT) || (isDefuse && !t1IsT)) ? 17500 : 16250;
         totalEarned1 += winBonus1; 
         
         let lossBonus2 = getLossMoney(state.l2 - 1);
+        // Если Террористы проиграли, но ставили бомбу, им бонус +$4000
         if (isBombPlant && t2IsT) lossBonus2 += 4000;
         
         totalEarned2 += lossBonus2;
@@ -1694,7 +1743,7 @@ function playOneRoundStep() {
 
     let s = currentLiveMapState;
     
-    // NEW 5.9.0 CS2 OVERTIME LOGIC FIX
+    // 5.9.0 CS2 OVERTIME LOGIC FIX
     let isEnd = false;
     let target = 13;
     if (s.r1 >= 12 && s.r2 >= 12) {
@@ -1766,17 +1815,23 @@ function saveMapResult(s) {
  * Генерация HTML-таблицы с послематчевой статистикой команды
  * @param {string} tName - Название команды
  * @param {object} statsObj - Объект со статистикой игроков
+ * @param {number} totalRounds - Опционально. Общее количество сыгранных раундов (5.11.0 Fix)
  * @returns {string} - HTML разметка таблицы
  */
-function generateStatsTable(tName, statsObj) {
+function generateStatsTable(tName, statsObj, totalRounds) {
     if (!statsObj) return "";
+    
+    // 5.11.0 Fix: Использование реального количества раундов для расчета ADR вместо жестких 24
+    let roundsToDivide = (totalRounds && totalRounds > 0) ? totalRounds : 24; 
     let sortedNicks = Object.keys(statsObj).sort((a, b) => statsObj[b].k - statsObj[a].k);
     
     let rows = sortedNicks.map(nick => {
         let st = statsObj[nick];
         let hsPercent = st.k > 0 ? Math.round((st.hs / st.k) * 100) : 0;
         let kd = st.d > 0 ? (st.k / st.d).toFixed(2) : st.k.toFixed(2);
-        let adr = Math.round(st.dmg / 24); 
+        
+        // 5.11.0 Fix: Теперь делится на roundsToDivide
+        let adr = Math.round(st.dmg / roundsToDivide); 
         
         return `<tr>
             <td><b>${nick}</b></td><td style="color:var(--info)">${st.role}</td><td style="font-weight:bold; font-size:14px;">${st.k}</td>
@@ -1853,8 +1908,8 @@ function renderHistory() {
                     
                     <span class="toggle-veto" onclick="let b=this.nextElementSibling; b.style.display=b.style.display==='none'?'block':'none'">[ Индивидуальная статистика игроков ]</span>
                     <div style="display:none; margin-top: 20px;">
-                        ${generateStatsTable(m.t1, d.pStats?.t1)}
-                        ${generateStatsTable(m.t2, d.pStats?.t2)}
+                        ${generateStatsTable(m.t1, d.pStats?.t1, (d.rounds||[]).length)}
+                        ${generateStatsTable(m.t2, d.pStats?.t2, (d.rounds||[]).length)}
                     </div>
                 </div>
             `).join("")}
